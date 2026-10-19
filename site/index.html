@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Café Nana · Mentes cukrászda és kávézó, Sopron</title>
+<meta name="description" content="Mentes cukrászda és kávézó Sopronban (József Attila u. 26.). Sütemények glutén, cukor, tej és tojás nélkül, reggeli, kávé, tortarendelés.">
+<meta name="theme-color" content="#F6F0E4">
+<meta property="og:title" content="Café Nana · Mentes cukrászda és kávézó, Sopron">
+<meta property="og:description" content="Glutén, cukor, tej és tojás nélkül készült sütemények Sopronban, a József Attila utcában.">
+<meta property="og:image" content="https://cafe-nana-sopron.netlify.app/img/hero-1400.webp?v=6">
+<link rel="icon" href="img/favicon.svg?v=2" type="image/svg+xml">
+<link rel="preload" href="fonts/gilda-display-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/ysabeau-office-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" as="image" imagesrcset="img/hero-1000.webp?v=6 1000w, img/hero-1400.webp?v=6 1400w, img/hero-2000.webp?v=6 2000w, img/hero-2800.webp?v=6 2800w, img/hero-3200.webp?v=6 3200w, img/hero-4000.webp?v=6 4000w" imagesizes="(max-aspect-ratio: 4/5) 96vh, 103vw" fetchpriority="high">
+<link rel="stylesheet" href="css/style.css?v=6">
+<!-- a Google térképes találathoz: cím, nyitvatartás, telefon -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":["CafeOrCoffeeShop","Bakery"],"name":"Café Nana","url":"https://cafe-nana-sopron.netlify.app/","image":"https://cafe-nana-sopron.netlify.app/img/hero-1400.webp","telephone":"+36 70 579 1598","email":"cafenanasopron@gmail.com","servesCuisine":"Gluténmentes, cukormentes, tejmentes és tojásmentes sütemények","address":{"@type":"PostalAddress","streetAddress":"József Attila u. 26.","postalCode":"9400","addressLocality":"Sopron","addressCountry":"HU"},"geo":{"@type":"GeoCoordinates","latitude":47.676086,"longitude":16.583156},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Wednesday","Thursday"],"opens":"07:30","closes":"17:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":["Friday","Saturday"],"opens":"07:30","closes":"18:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Sunday","opens":"07:30","closes":"15:00"}],"sameAs":["https://www.facebook.com/cafenanasopron","https://www.instagram.com/nanadietcake/","https://wolt.com/hu/hun/sopron/restaurant/cafe-nana"]}
+</script>
+<script>document.documentElement.classList.add('js');if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');setTimeout(function(){document.documentElement.classList.add('ok')},4000)</script>
+</head>
+<body>
+
+<!-- SVG definíciók: a díszvonalak közös elemei -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- kovácsoltvas kacskaringó (a terasz kapujáról), jobbra néző -->
+    <symbol id="curl" viewBox="0 0 120 40" overflow="visible">
+      <path d="M0 34C22 34 30 20 44 14C58 8 70 14 70 24C70 32 61 35 56 30C52 26 56 20 61 22"/>
+      <path d="M44 34C64 34 80 30 92 30C104 30 112 33 120 34"/>
+    </symbol>
+  </defs>
+</svg>
+
+<a class="skip" href="#mentes" data-i18n="skip">Ugrás a tartalomra</a>
+
+<header class="hd" id="hd">
+  <nav class="hd__nav hd__nav--l" aria-label="Fő menü">
+    <a href="#haz" data-i18n="nav.haz">A ház</a>
+    <a href="#muhely" data-i18n="nav.muhely">Sütemények</a>
+  </nav>
+  <a class="hd__logo" href="#top" aria-label="Café Nana, vissza az oldal tetejére"><img src="img/logo.webp?v=6" width="768" height="804" alt="Café Nana"></a>
+  <nav class="hd__nav hd__nav--r" aria-label="Fő menü, folytatás">
+    <a href="#kinalat" data-i18n="nav.kinalat">Étlap</a>
+    <a href="#latogatas" data-i18n="nav.latogatas">Elérhetőség</a>
+  </nav>
+  <a class="hd__tel" href="tel:+36705791598">+36 70 579 1598</a>
+  <div class="hd__tools">
+    <div class="lang" role="group" aria-label="Nyelv">
+      <button type="button" data-lang="hu" aria-pressed="true">HU</button><span aria-hidden="true">/</span><button type="button" data-lang="de" aria-pressed="false">DE</button>
+    </div>
+  </div>
+  <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer"><span></span><span></span><b class="sr" data-i18n="menu.open">Menü</b></button>
+</header>
+
+<div class="drawer" id="drawer" aria-hidden="true">
+  <svg class="drawer__orn" viewBox="0 0 120 40" aria-hidden="true"><use href="#curl"/></svg>
+  <nav aria-label="Mobil menü">
+    <a href="#haz" data-i18n="nav.haz">A ház</a>
+    <a href="#muhely" data-i18n="nav.muhely">Sütemények</a>
+    <a href="#kinalat" data-i18n="nav.kinalat">Étlap</a>
+    <a href="#latogatas" data-i18n="nav.latogatas">Elérhetőség</a>
+  </nav>
+  <div class="drawer__foot">
+    <a href="tel:+36705791598">+36 70 579 1598</a>
+    <div class="lang" role="group" aria-label="Nyelv">
+      <button type="button" data-lang="hu" aria-pressed="true">HU</button><span aria-hidden="true">/</span><button type="button" data-lang="de" aria-pressed="false">DE</button>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- 1. Belépő: ablak a szalonra -->
+<section class="hero" id="top">
+  <div class="hero__stage" id="heroStage">
+    <div class="hero__win" id="heroWin">
+      <img class="hero__img" id="heroImg" src="img/hero-1400.webp?v=6" srcset="img/hero-1000.webp?v=6 1000w, img/hero-1400.webp?v=6 1400w, img/hero-2000.webp?v=6 2000w, img/hero-2800.webp?v=6 2800w, img/hero-3200.webp?v=6 3200w, img/hero-4000.webp?v=6 4000w" sizes="(max-aspect-ratio: 4/5) 96vh, 103vw" width="4000" height="5000" alt="Nyitott szárnyas ajtó a szalonból a pult felé: kristálycsillár, süteményes vitrin, elöl teáskanna és gyertya" fetchpriority="high" decoding="async">
+      <div class="hero__cur" id="heroCur"></div>
+    </div>
+    <svg class="hero__lines" id="heroLines" aria-hidden="true">
+      <path class="hl hl--b" id="hlL" pathLength="1"/>
+      <path class="hl hl--b" id="hlR" pathLength="1"/>
+      <path class="hl hl--a" id="hlL2" pathLength="1"/>
+      <path class="hl hl--a" id="hlR2" pathLength="1"/>
+      <path class="hl hl--f" id="hlFin" pathLength="1"/>
+      <path class="hl hl--g" id="hlGl" pathLength="1"/>
+      <path class="hl hl--g" id="hlGr" pathLength="1"/>
+      <g id="hlCurls"><use class="hl hl--c" id="hlCl" href="#curl"/><use class="hl hl--c" id="hlCr" href="#curl"/></g>
+    </svg>
+
+    <div class="hero__l" id="heroL">
+      <h1 class="hero__h" id="heroH" data-i18n="hero.h">Mentes cukrászda Sopronban</h1>
+    </div>
+    <div class="hero__r" id="heroR">
+      <p class="hero__p" data-i18n="hero.p">A József Attila utcában vagyunk, a&nbsp;tornyos sarokházban. Reggelizni is lehet, és minden süteményt elvihet.</p>
+      <div class="hero__cta">
+        <a class="btn btn--ink" href="#kinalat" data-i18n="hero.b1">Étlap</a>
+        <a class="btn" href="https://maps.google.com/?q=Café+Nana+Sopron+József+Attila+u.+26" target="_blank" rel="noopener" data-i18n="hero.b2">Útvonal</a>
+      </div>
+      <p class="hero__now" id="heroNow"></p>
+    </div>
+
+  </div>
+</section>
+
+<!-- 2. Mentesség: az áthúzott szavak -->
+<section class="free" id="mentes">
+  <div class="wrap free__grid">
+    <h2 class="free__h" id="freeH" aria-label="Glutén, cukor, tej és tojás nélkül" data-i18n-aria="free.aria">
+      <span class="strike" data-i18n="free.w1">Glutén,</span>
+      <span class="strike" data-i18n="free.w2">cukor,</span>
+      <span class="strike" data-i18n="free.w3">tej,</span>
+      <span class="strike" data-i18n="free.w4">tojás.</span>
+    </h2>
+    <div class="free__text">
+      <p class="lead rv" data-i18n="free.p1">Egyik sem kerül a süteményeinkbe. A konyha teljesen gluténmentes, a reggelihez adott pirítós és a bagel is.</p>
+      <p class="rv" data-i18n="free.p2">A kávét kérheti kókusz-, mandula- vagy zabitallal. Ha valamire nagyon érzékeny, kérdezzen rá a pultnál, és megmondjuk, miből készült az adott sütemény.</p>
+    </div>
+    <div class="free__side">
+      <figure class="frame frame--tall free__fig">
+        <div class="frame__in"><img src="img/vitrin-640.webp?v=6" srcset="img/vitrin-640.webp?v=6 640w, img/vitrin-1000.webp?v=6 841w" sizes="(min-width: 900px) 30vw, 80vw" width="841" height="1052" alt="Torták és szeletek a Café Nana vitrinjében" loading="lazy"></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- 3. A ház: vonalrajz, akkor és ma -->
+<section class="house" id="haz">
+  <div class="house__stage" id="houseStage">
+    <div class="house__text">
+      <div class="house__state is-on" data-state="0">
+        <h2 class="h2 split" data-i18n="house.h">A ház</h2>
+        <p data-i18n="house.p">Régóta a családunk tulajdona, és helyi védett épület.</p>
+      </div>
+      <div class="house__state" data-state="1">
+        <h3 class="h3" data-i18n="house.h1">Akkor</h3>
+        <p data-i18n="house.p1">Egy régi fényképen még vendéglő volt itt. A&nbsp;homlokzaton ez a tábla állt: Sass Lajos Rákóczi vendéglője.</p>
+      </div>
+      <div class="house__state" data-state="2">
+        <h3 class="h3" data-i18n="house.h2">Ma</h3>
+        <p data-i18n="house.p2">Kávézó és cukrászda. Amikor berendeztük, a&nbsp;régi lőveri kávéházak voltak a&nbsp;minta.</p>
+      </div>
+      <div class="house__steps" aria-hidden="true">
+        <span class="house__bar"><i id="houseFill"></i></span>
+        <span class="house__step is-on" data-i18n="house.s0">A ház</span><span class="house__step" data-i18n="house.s1">Akkor</span><span class="house__step" data-i18n="house.s2">Ma</span>
+      </div>
+    </div>
+    <div class="house__pic" id="housePic">
+      <div class="house__sheet" id="houseSheet"></div>
+      <img class="house__new" id="houseNew" src="img/villa-1100.webp?v=6" srcset="img/villa-1100.webp?v=6 1100w, img/villa-1800.webp?v=6 1800w" sizes="(min-width: 900px) 60vw, 92vw" width="1800" height="1173" alt="A villa ma: hagymakupola, Café Nana felirat a homlokzaton és a balluszteres lépcső" loading="lazy">
+      <svg class="house__frame" id="houseFrame" aria-hidden="true"><path pathLength="1"/><path pathLength="1"/></svg>
+      <svg class="house__draw" id="houseDraw" viewBox="120 190 890 580" aria-hidden="true">
+        <g class="vl" id="villaLines"></g>
+        <clipPath id="signClip"><rect x="645" y="560" width="0" height="44"/></clipPath>
+        <g class="house__sign" clip-path="url(#signClip)"><text x="707" y="589" textLength="100" lengthAdjust="spacingAndGlyphs" text-anchor="middle">SASS LAJOS</text><text x="871" y="594" textLength="160" lengthAdjust="spacingAndGlyphs" text-anchor="middle">RÁKÓCZI VENDÉGLŐJE</text></g>
+      </svg>
+    </div>
+    <p class="house__credit" data-i18n="house.credit">Rajz a sopronanno.hu egyik régi fotója alapján</p>
+  </div>
+</section>
+
+<!-- 4. A szalon -->
+<section class="salon" id="szalon">
+  <div class="wrap salon__grid">
+    <div class="salon__text">
+      <h2 class="h2 split" data-i18n="salon.h">A szalon</h2>
+      <p class="rv" data-i18n="salon.p">Bent kandalló, csillárok, halszálkás parketta és fehér, XVI. Lajos-stílusú székek. Jó időben kint, a&nbsp;teraszon is lehet ülni.</p>
+    </div>
+    <figure class="frame frame--wide salon__a">
+      <div class="frame__in"><img src="img/szalon-900.webp?v=6" srcset="img/szalon-900.webp?v=6 900w, img/szalon-1600.webp?v=6 1600w" sizes="(min-width: 900px) 56vw, 92vw" width="1600" height="1059" alt="A szalon fehér asztalokkal és kárpitozott székekkel" loading="lazy"></div>
+    </figure>
+    <figure class="frame frame--tall salon__b">
+      <div class="frame__in"><img src="img/terasz-700.webp?v=6" srcset="img/terasz-700.webp?v=6 700w, img/terasz-1100.webp?v=6 1100w" sizes="(min-width: 900px) 24vw, 56vw" width="1100" height="1375" alt="A terasz kovácsoltvas székekkel és napernyőkkel a balluszteres homlokzat előtt" loading="lazy"></div>
+    </figure>
+  </div>
+</section>
+
+<!-- 5. A műhelyből -->
+<section class="shop" id="muhely">
+  <div class="shop__pin" id="shopPin">
+    <div class="shop__track" id="shopTrack">
+      <div class="card card--intro">
+        <h2 class="h2 split" data-i18n="shop.h">A műhelyből</h2>
+        <p class="rv" data-i18n="shop.p">A műhely a kávézó alatt van, ott sütünk minden reggel. Hogy aznap mi kerül a vitrinbe, az változik, ezek a képek csak példák.</p>
+      </div>
+      <figure class="card card--t">
+        <div class="frame frame--tall"><div class="frame__in"><img src="img/szeletek-700.webp?v=6" srcset="img/szeletek-700.webp?v=6 700w, img/szeletek-1100.webp?v=6 1100w, img/szeletek-1500.webp?v=6 1500w" sizes="(min-width: 900px) 34vw, 100vw" width="1500" height="1500" alt="Tányéron körbe rakott, színes torta- és mousse-szeletek" loading="lazy"></div></div>
+        <figcaption><b data-i18n="c1">Napi szeletek</b><span data-i18n="c1d">Volt már fahéjas szilvás, meggyes pite és mangótorta is.</span></figcaption>
+      </figure>
+      <figure class="card card--s">
+        <div class="frame frame--tall"><div class="frame__in"><img src="img/kremes-640.webp?v=6" srcset="img/kremes-640.webp?v=6 640w, img/kremes-1000.webp?v=6 1000w" sizes="(min-width: 900px) 22vw, 80vw" width="1000" height="1250" alt="Krémes szeletek tálcán a szalonban" loading="lazy"></div></div>
+        <figcaption><b data-i18n="c2">Krémes</b><span data-i18n="c2d">Tojás és tej nélkül, ami egy krémesnél nem kis dolog.</span></figcaption>
+      </figure>
+      <figure class="card card--w">
+        <div class="frame frame--wide"><div class="frame__in"><img src="img/szelet-800.webp?v=6" srcset="img/szelet-800.webp?v=6 800w, img/szelet-1300.webp?v=6 1300w" sizes="(min-width: 900px) 34vw, 86vw" width="1300" height="1040" alt="Réteges torta szelet narancszselével és csokoládés krémmel" loading="lazy"></div></div>
+        <figcaption><b data-i18n="c3">Narancsos-csokoládés szelet</b><span data-i18n="c3d">Csokoládékrém és narancszselé, rétegezve.</span></figcaption>
+      </figure>
+      <figure class="card card--t">
+        <div class="frame frame--tall"><div class="frame__in"><img src="img/pekaru-640.webp?v=6" srcset="img/pekaru-640.webp?v=6 640w, img/pekaru-1000.webp?v=6 1000w" sizes="(min-width: 900px) 24vw, 80vw" width="1000" height="1250" alt="Gluténmentes péksütemények a pult vitrinjében" loading="lazy"></div></div>
+        <figcaption><b data-i18n="c4">Péksütemények</b><span data-i18n="c4d">Reggelre sütjük, például a&nbsp;diós kiflit.</span></figcaption>
+      </figure>
+      <figure class="card card--s">
+        <div class="frame frame--tall"><div class="frame__in"><img src="img/pult-640.webp?v=6" srcset="img/pult-640.webp?v=6 640w, img/pult-1000.webp?v=6 959w" sizes="(min-width: 900px) 22vw, 80vw" width="959" height="1199" alt="A pult hűtővitrinje tortákkal és poharas desszertekkel" loading="lazy"></div></div>
+        <figcaption><b data-i18n="c5">A pult</b><span data-i18n="c5d">A hűtőpultban poharas desszertek és egész torták is vannak.</span></figcaption>
+      </figure>
+      <div class="card card--note" id="torta">
+        <div class="cart" data-cart>
+          <svg class="cart__svg" aria-hidden="true"><path class="cart__a" pathLength="1"/><path class="cart__b" pathLength="1"/></svg>
+          <div class="cart__body">
+            <h3 class="h3" data-i18n="note.h">Tortarendelés</h3>
+            <p data-i18n="note.p">Egész tortát is sütünk, születésnapra vagy bármilyen alkalomra. Hívjon fel, és megbeszéljük, milyen legyen és mikorra kell.</p>
+            <a class="btn btn--ink" href="tel:+36705791598">+36 70 579 1598</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Kínálat -->
+<section class="menu" id="kinalat">
+  <div class="wrap">
+    <div class="menu__card cart" data-cart data-crown>
+      <svg class="cart__svg" aria-hidden="true"><path class="cart__a" pathLength="1"/><path class="cart__b" pathLength="1"/><path class="cart__crown" pathLength="1"/></svg>
+      <div class="cart__body">
+        <h2 class="h2 split menu__h" data-i18n="menu.h">Étlap</h2>
+        <p class="menu__lead rv" data-i18n="menu.lead">Ez csak ízelítő, a&nbsp;teljes napi kínálatot a pultnál látja.</p>
+        <div class="menu__cols">
+          <div class="menu__col rv">
+            <h3 class="menu__ch"><span data-i18n="mc1">Reggeli</span> <small data-i18n="mc1t">7:30-tól</small></h3>
+            <ul>
+              <li data-peek="img/m-benedict-720.webp?v=6"><img class="th" src="img/m-benedict-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m1">Benedict-tojás</b><span data-i18n="m1d">sonkával vagy lazaccal, hollandi mártással</span></li>
+              <li data-peek="img/m-avokado-720.webp?v=6"><img class="th" src="img/m-avokado-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m2">Avokádós Benedict</b><span data-i18n="m2d">salátával, koktélparadicsommal</span></li>
+              <li data-peek="img/m-bagel-720.webp?v=6"><img class="th" src="img/m-bagel-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m3">Bagel-szendvics</b><span data-i18n="m3d">gluténmentes bagelből, zöldségekkel</span></li>
+              <li data-peek="img/m-salata-720.webp?v=6"><img class="th" src="img/m-salata-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m4">Tonhalsaláta</b><span data-i18n="m4d">főtt tojással, olajbogyóval, citrommal</span></li>
+            </ul>
+          </div>
+          <div class="menu__col rv">
+            <h3 class="menu__ch"><span data-i18n="mc2">Sütemények</span></h3>
+            <ul>
+              <li data-peek="img/m-szeletek-720.webp?v=6"><img class="th" src="img/m-szeletek-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m5">Napi szeletek</b><span data-i18n="m5d">a vitrinből</span></li>
+              <li data-peek="img/m-kremes-720.webp?v=6"><img class="th" src="img/m-kremes-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m6">Krémes</b><span data-i18n="m6d">a régi kedvenc, mentes változatban</span></li>
+              <li data-peek="img/m-narancs-720.webp?v=6"><img class="th" src="img/m-narancs-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m7">Narancsos-csokoládés szelet</b><span data-i18n="m7d">csokoládékrémmel, narancszselével</span></li>
+              <li data-peek="img/m-pekaru-720.webp?v=6"><img class="th" src="img/m-pekaru-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m8">Péksütemények</b><span data-i18n="m8d">diós kifli és társai</span></li>
+              <li data-peek="img/m-box-720.webp?v=6"><img class="th" src="img/m-box-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m9">Torta box</b><span data-i18n="m9d">3, 5 vagy 8 vegyes szelet elvitelre: 6&nbsp;000, 10&nbsp;000 vagy 16&nbsp;000&nbsp;Ft</span></li>
+              <li data-peek="img/m-torta-720.webp?v=6"><img class="th" src="img/m-torta-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m10">Egész torta</b><span data-i18n="m10d">rendelésre, előre telefonon</span></li>
+            </ul>
+          </div>
+          <div class="menu__col rv">
+            <h3 class="menu__ch"><span data-i18n="mc3">Italok</span></h3>
+            <ul>
+              <li data-peek="img/m-kave-720.webp?v=6"><img class="th" src="img/m-kave-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m11">Kávé</b><span data-i18n="m11d">világos pörkölésű, növényi itallal is</span></li>
+              <li data-peek="img/m-jeges-720.webp?v=6"><img class="th" src="img/m-jeges-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m12">Jegeskávé</b><span data-i18n="m12d">ugyanabból a kávéból, jéggel</span></li>
+              <li data-peek="img/m-limonade-720.webp?v=6"><img class="th" src="img/m-limonade-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m13">Házi limonádé</b><span data-i18n="m13d">bodzával és mentával</span></li>
+              <li data-peek="img/m-elvitel-720.webp?v=6"><img class="th" src="img/m-elvitel-200.webp?v=6" alt="" loading="lazy"><b data-i18n="m14">Elvitelre</b><span data-i18n="m14d">a kávé, a limonádé és minden sütemény</span></li>
+            </ul>
+          </div>
+        </div>
+        <p class="menu__foot rv" data-i18n-html="menu.foot">Tortát és torta boxot telefonon rendelhet: <a href="tel:+36705791598">+36 70 579 1598</a>. A Wolton házhoz is rendelhet.</p>
+      </div>
+    </div>
+  </div>
+  <div class="peek" id="peek" aria-hidden="true"><img alt=""><img alt=""></div>
+</section>
+
+<!-- 7. Vendégeink -->
+<section class="words" id="velemenyek">
+  <div class="wrap">
+    <svg class="orn" viewBox="0 0 600 56" aria-hidden="true">
+      <path class="orn__c" pathLength="1" d="M300 4V12M300 12C291 18 284 25 286 33C288 40 295 43 300 44C305 43 312 40 314 33C316 25 309 18 300 12ZM288 50H312"/>
+      <path class="orn__s" pathLength="1" d="M316 50C330 50 336 39 346 39C356 39 358 50 350 52C344 53 340 47 346 45.5M356 50H600"/>
+      <path class="orn__s" pathLength="1" d="M284 50C270 50 264 39 254 39C244 39 242 50 250 52C256 53 260 47 254 45.5M244 50H0"/>
+    </svg>
+    <div class="words__stage" id="quotes">
+      <blockquote class="q is-on"><p data-i18n="q1">„Sopronban, a Lővérek lábánál található ez a kis ékszerdoboz.”</p><cite data-i18n="q1s">ittjartam.hu, 2023</cite></blockquote>
+      <blockquote class="q"><p data-i18n="q2">„A pirítós is gluténmentes, a meggyes pite pedig tojás és glutén nélkül készült. A személyzet nagyon kedves.”</p><cite data-i18n="q2s">Restaurant Guru, angolból fordítva</cite></blockquote>
+      <blockquote class="q"><p data-i18n="q3">„Legjobb jegeskávét itt ittam!”</p><cite data-i18n="q3s">magyarvelemeny.com</cite></blockquote>
+    </div>
+    <div class="words__nav" id="quotesNav" role="tablist" aria-label="Vélemények">
+      <button type="button" role="tab" aria-selected="true" aria-label="1"></button><button type="button" role="tab" aria-selected="false" aria-label="2"></button><button type="button" role="tab" aria-selected="false" aria-label="3"></button>
+    </div>
+    <p class="words__rate rv" data-i18n="q.rate">4,6 csillag a Google-értékeléseken</p>
+  </div>
+</section>
+
+<!-- 8. Látogatás -->
+<section class="visit" id="latogatas">
+  <div class="wrap visit__grid">
+    <div class="visit__text">
+      <h2 class="h2 split" data-i18n="visit.h">Elérhetőség</h2>
+      <address class="rv">
+        <span>9400 Sopron, József Attila u. 26.</span>
+        <a href="tel:+36705791598">+36 70 579 1598</a>
+        <a href="mailto:cafenanasopron@gmail.com">cafenanasopron@gmail.com</a>
+      </address>
+      <p class="rv" data-i18n="visit.p">A József Attila és az Újlaki utca sarkán. Kártyával is fizethet.</p>
+      <div class="visit__cta rv">
+        <a class="btn btn--ink" href="https://maps.google.com/?q=Café+Nana+Sopron+József+Attila+u.+26" target="_blank" rel="noopener" data-i18n="visit.b1">Útvonaltervezés</a>
+        <a class="btn" href="https://www.facebook.com/cafenanasopron" target="_blank" rel="noopener" data-i18n="visit.b2">Facebook</a>
+      </div>
+    </div>
+    <div class="visit__hours cart" data-cart>
+      <svg class="cart__svg" aria-hidden="true"><path class="cart__a" pathLength="1"/><path class="cart__b" pathLength="1"/></svg>
+      <div class="cart__body">
+        <h3 class="h3" data-i18n="hours.h">Nyitvatartás</h3>
+        <table class="hours" id="hours">
+          <tbody>
+            <tr data-d="2"><th data-i18n="d2">Kedd</th><td>7:30–17:00</td></tr>
+            <tr data-d="3"><th data-i18n="d3">Szerda</th><td>7:30–17:00</td></tr>
+            <tr data-d="4"><th data-i18n="d4">Csütörtök</th><td>7:30–17:00</td></tr>
+            <tr data-d="5"><th data-i18n="d5">Péntek</th><td>7:30–18:00</td></tr>
+            <tr data-d="6"><th data-i18n="d6">Szombat</th><td>7:30–18:00</td></tr>
+            <tr data-d="0"><th data-i18n="d0">Vasárnap</th><td>7:30–15:00</td></tr>
+            <tr data-d="1"><th data-i18n="d1">Hétfő</th><td data-i18n="closed">zárva</td></tr>
+          </tbody>
+        </table>
+        <p class="hours__now" id="hoursNow"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="ft">
+  <svg class="orn orn--ft" viewBox="0 0 600 56" aria-hidden="true">
+    <path class="orn__c" pathLength="1" d="M300 4V12M300 12C291 18 284 25 286 33C288 40 295 43 300 44C305 43 312 40 314 33C316 25 309 18 300 12ZM288 50H312"/>
+    <path class="orn__s" pathLength="1" d="M316 50C330 50 336 39 346 39C356 39 358 50 350 52C344 53 340 47 346 45.5M356 50H600"/>
+    <path class="orn__s" pathLength="1" d="M284 50C270 50 264 39 254 39C244 39 242 50 250 52C256 53 260 47 254 45.5M244 50H0"/>
+  </svg>
+  <img class="ft__logo" src="img/logo-light.webp?v=6" width="768" height="804" alt="Café Nana" loading="lazy">
+  <ul class="ft__row">
+    <li>9400 Sopron, József Attila u. 26.</li>
+    <li><a href="tel:+36705791598">+36 70 579 1598</a></li>
+    <li><a href="https://www.facebook.com/cafenanasopron" target="_blank" rel="noopener">Facebook</a></li>
+    <li><a href="https://www.instagram.com/nanadietcake/" target="_blank" rel="noopener">Instagram</a></li>
+    <li><a href="https://wolt.com/hu/hun/sopron/restaurant/cafe-nana" target="_blank" rel="noopener">Wolt</a></li>
+  </ul>
+  <p class="ft__small"><span data-i18n="ft.c">© 2026 Café Nana</span> · <span data-i18n="ft.photo">Nyitókép: Kisklau</span></p>
+</footer>
+
+<script src="js/gsap.min.js?v=6"></script>
+<script src="js/ScrollTrigger.min.js?v=6"></script>
+<script src="js/main.js?v=6"></script>
+</body>
+</html>

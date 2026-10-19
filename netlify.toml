@@ -1,0 +1,3 @@
+# Netlify: nincs build, csak a site/ mappa kerül ki
+[build]
+  publish = "site"

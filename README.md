@@ -1,4 +1,4 @@
-# Café Nana, Sopron (v2.4)
+# Café Nana, Sopron (v3)
 
 Statikus weboldal (HTML, CSS, JS, GSAP), build nélkül.
 

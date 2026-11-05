@@ -3,12 +3,14 @@
 const { chromium, devices } = require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright');
 (async () => {
   const mode = process.argv[2] || 'desktop', rate = +(process.argv[3] || 1), url = process.argv[4] || 'http://localhost:8766/';
-  const b = await chromium.launch();
+  const HWS = !!process.env.HWSTUB; // valódi videókártyát mutat a próbának, a WebGL ki van kapcsolva (így a headless GL-visszaolvasás nem torzít)
+  const b = await chromium.launch(HWS ? { args: ['--disable-webgl', '--disable-3d-apis'] } : {});
   let o;
   if (mode === 'mobile') { o = { ...devices['iPhone 13'] }; delete o.defaultBrowserType; }
   else o = { viewport: { width: 1470, height: 800 }, deviceScaleFactor: 2 };
   const ctx = await b.newContext(o); const p = await ctx.newPage();
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  if (HWS) await p.addInitScript(() => { const g = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function (t, o) { if (t === 'webgl' && !this.isConnected) return { getExtension: n => n === 'WEBGL_debug_renderer_info' ? { UNMASKED_RENDERER_WEBGL: 1 } : null, getParameter: () => 'ANGLE (Apple, Apple M1, OpenGL 4.1)' }; return g.call(this, t, o); }; });
   await p.goto(url, { waitUntil: 'load' });
   const cdp = await ctx.newCDPSession(p);
   const src = mode === 'mobile' ? 'default' : 'mouse';

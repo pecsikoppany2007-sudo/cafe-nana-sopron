@@ -75,3 +75,18 @@ kopi élőben akadozást, a lap tetején vibrálást, beragadt ételképet, a ny
 
 ## A tulajjal egyeztetni
 Nyitvatartás és telefonszám. A reggeli-, sütemény- és italkínálat, amelyet a fotók alapján írtam (Benedict-tojás sonkával és avokádóval, bagel, tonhalsaláta, krémes, narancsos-csokoládés szelet, jeges kávé, bodzás limonádé), és hogy kell-e ár. A mestercukrász neve (a tábla szerint Baánné Varga Ildikó, az oldalra nem került). A Schmauser család aláírás. A villa rajza a sopronanno.hu archív felvétele nyomán készült; ha van tiszta régi fotójuk, az „Akkor” részbe kerülhet. A fotók engedélye (a nyitókép Kisklau fotója, a villa, a terasz és a Benedict Google-helyfotó). A kártyás fizetés. A v2.4 termékei vendégvéleményekből (lazacos Benedict, diós kifli, fahéjas szilvás, növényi italok). Van-e várkerületi üzlet.
+
+## v3 (2026-11-05): korszerűsítés a későbbi oldalak tanulságaival
+kopi kérése: a Café Nana vonala marad (krém papír, kupolakék tinta, barack vonal, Gilda Display + Ysabeau Office, a ház formái), de minden, amit azóta tanultunk (Katlan, Gyógygödör v5–v6, HabVero, Cafe Flow, Avira v3), kerüljön bele, egyedi vonásokkal.
+- **Görgetés:** egérrel puha, lassabb görgetés (Lenis, lerp 0,085, görgő 0,9, a GSAP órájáról hajtva), a menülinkek 1,6 s alatt siklanak a címhez. Érintőn natív görgetés, és ott semmi nem követi az ujjat: a nyitókép íve az első görgetésre egyszer kinyílik (a lap tetején visszacsukódik), a ház rajza, a régi cégtábla és a mai fotó egy rövid filmként fut le, a díszvonalak egyszer rajzolódnak ki.
+- **Nyitókép térben:** mélységtérkép (Depth Anything V2) alapján a fotó az egérre mélységben mozdul, és ahogy az ív kinyílik, az előtér (asztal, gyertya) közelebb jön, a pult hátrébb marad. Csak egérrel és valódi videókártyával; a vászon pontosan a fotó helyére rajzol.
+- **Kupola-kurzor:** barack pötty, mögötte a kupola íve; linken apró sötét pöttyé húzódik (nem ül rá a feliratra), fotón kitágul és kifehéredik.
+- **Gombok:** a kitöltés a kupola ívével emelkedik fel alulról, a felirat felgördül, egérrel a gomb kicsit a mutató felé húzódik. Szögletesek maradtak.
+- **Címek:** soronként, enyhe dőlésből úsznak fel maszk mögül. A mentesség bevezető mondata szavanként sötétedik.
+- **A ház:** a mai fotó a rajzolt torony helyén, a torony ívében tűnik fel, és onnan nyílik szét a kép fölött (eddig áttűnés volt).
+- **Szalon:** a képpár egy sorban, egyforma magasan (telefonon is egymás mellett, nincs átfedés); egérrel a kép a kereten belül lassabban mozdul.
+- **Műhely:** a kép a kereten belül lassabban halad, mint a sor; alatta vékony haladásjelző. Érintős táblagépen a sor ujjal húzható.
+- **Étlap:** a kartusos kártya papírlapként emelkedik fel és simul ki; egérre a tétel neve elé rövid barack vonal fut.
+- **Vélemények:** csak Google, három valódi, szó szerinti magyar vélemény (Noémi és Bettina 2026. október, Árpád 2024), „4,6 csillag a Google-on, több mint 250 értékelésből” (2026-11-05: 251), gomb közvetlenül a Google véleményíró ablakára (placeid ChIJx0r3KhM9bEcRC8vJmlG1tE4). A német oldalon fordítás, jelölve.
+- **Egyéb:** papírszemcse (csak valódi videókártyával, keverési mód nélkül), függöny-lábléc egérrel, a mobil menü kupolaívként emelkedik fel, asset-verzió ?v=7.
+- **Mérés (Chrome-trace):** Retina asztali gép, minden asztali hatással 0,1% kieső képkocka; iPhone-emuláció 4× lassítással 0,2%. Vízszintes túlcsordulás 320–1920 px között nincs, HU és DE, csökkentett mozgás rendben, menülinkek a címnél érnek célba.

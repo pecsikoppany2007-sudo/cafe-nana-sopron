@@ -1,4 +1,6 @@
-/* Café Nana v2.4 */
+/* Café Nana v3: v2.4 + puha görgetés egérrel (Lenis), kupola-kurzor, mélységtérképes nyitókép, soronként felúszó címek,
+   ív alakú gombkitöltés, a ház fotója a torony ívéből nyílik, papírként felemelkedő étlap, Google-vélemények, függöny-lábléc.
+   Érintőképernyőn semmi nem követi az ujjat: ott minden egyszer, a saját tempójában fut le. */
 (() => {
 'use strict';
 const $ = (s, c = document) => c.querySelector(s);
@@ -17,6 +19,31 @@ gsap.defaults({ ease: EASE, autoRound: false });
 const NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag, attrs = {}) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
 const isMob = () => innerWidth < 900;
+const HTML = document.documentElement;
+if (!FINE) HTML.classList.add('touch');
+// valódi videókártya? (szoftveres megjelenítésnél a térhatás és a papírszemcse kimarad)
+const HW = (() => {
+  try {
+    const c = document.createElement('canvas'), g = c.getContext('webgl');
+    if (!g) return false;
+    const ext = g.getExtension('WEBGL_debug_renderer_info');
+    const r = ext ? String(g.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
+    const lose = g.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext();
+    return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(r);
+  } catch (e) { return false; }
+})();
+if (HW && !RM) HTML.classList.add('grain');
+/* Görgetéshez kötött rajzolás: egérrel a görgetés viszi, érintőn egyszer lefut, amikor a látótérbe ér (dur mp alatt). */
+function drive(tl, cfg, liveEls, dur) {
+  if (FINE) return ScrollTrigger.create(Object.assign({ animation: tl, scrub: SCRUB }, cfg, liveEls ? live(liveEls) : {}));
+  tl.pause(0);
+  const els = liveEls ? [].concat(liveEls) : [];
+  return ScrollTrigger.create({ trigger: cfg.trigger, start: cfg.touch || 'top 84%', once: true, onEnter: () => {
+    els.forEach(e => e.classList.add('is-live'));
+    tl.eventCallback('onComplete', () => setTimeout(() => els.forEach(e => e.classList.remove('is-live')), 300));
+    tl.timeScale(tl.duration() / (dur || 1.8)).play();
+  } });
+}
 
 /* ---------- Nyelv ---------- */
 const DE = {
@@ -56,10 +83,11 @@ const DE = {
   'm13':'Hausgemachte Limonade','m13d':'mit Holunder und Minze',
   'm14':'Zum Mitnehmen','m14d':'Kaffee, Limonade und jeder Kuchen',
   'menu.foot':'Torten und Tortenboxen können Sie telefonisch bestellen: <a href="tel:+36705791598">+36 70 579 1598</a>. Über Wolt können Sie auch nach Hause bestellen.',
-  'q1':'„Dieses kleine Schmuckkästchen liegt in Sopron, am Fuß der Löwern.“','q1s':'ittjartam.hu, 2023, aus dem Ungarischen',
-  'q2':'„Auch der Toast ist glutenfrei, und der Kirschkuchen wurde ohne Ei und Gluten gebacken. Das Personal ist sehr freundlich.“','q2s':'Restaurant Guru, aus dem Englischen',
-  'q3':'„Den besten Eiskaffee habe ich hier getrunken!“','q3s':'magyarvelemeny.com, aus dem Ungarischen',
-  'q.rate':'4,6 Sterne bei Google',
+  'rev.h':'Das schreiben unsere Gäste','rev.rate':'4,6 Sterne bei Google, aus mehr als 250 Bewertungen','rev.stars':'5 Sterne',
+  'rv1':'„Ein Traum! Wir sind 300 km für diese Stimmung gefahren. Zu Weihnachten ein ‚must visit place‘! Himmlische Kuchen und Gebäck. Alles ohne. Die Bedienungen sind sehr lieb.“','rv1s':'Google-Bewertung, Oktober 2026, aus dem Ungarischen',
+  'rv2':'„Ich habe hier einen sehr feinen Kuchen ohne alles gegessen, und auch der Kaffee war von tadelloser Qualität! Wenn wir wieder in der Gegend sind, kommen wir bestimmt wieder.“','rv2s':'Google-Bewertung, Oktober 2026, aus dem Ungarischen',
+  'rv3':'„Feine gluten- und laktosefreie Kuchen mit hervorragendem Kaffee. Die Einrichtung zeigt einen gutbürgerlichen Geschmack wie in alten Zeiten, dazu freundliche Bedienung, danke!“','rv3s':'Google-Bewertung, 2024, aus dem Ungarischen',
+  'rev.ask':'Waren Sie schon bei uns? Schreiben Sie, wie es Ihnen gefallen hat.','rev.b':'Bewertung auf Google schreiben',
   'visit.h':'Kontakt','visit.p':'An der Ecke József Attila utca und Újlaki utca. Kartenzahlung ist möglich.',
   'visit.b1':'Route planen','visit.b2':'Facebook',
   'hours.h':'Öffnungszeiten','d0':'Sonntag','d1':'Montag','d2':'Dienstag','d3':'Mittwoch','d4':'Donnerstag','d5':'Freitag','d6':'Samstag','closed':'geschlossen',
@@ -69,7 +97,7 @@ const HU = {};
 $$('[data-i18n]').forEach(el => { HU[el.dataset.i18n] = el.innerHTML; });
 $$('[data-i18n-html]').forEach(el => { HU[el.dataset.i18nHtml] = el.innerHTML; });
 $$('[data-i18n-aria]').forEach(el => { HU[el.dataset.i18nAria] = el.getAttribute('aria-label'); });
-let lang = 'hu';
+let lang = 'hu', leadReady = false;
 try { const s = localStorage.getItem('nana-lang'); if (s === 'de') lang = 'de'; } catch (e) {}
 
 function applyLang(l) {
@@ -84,6 +112,8 @@ function applyLang(l) {
   $$('.split.is-in .w>span').forEach(s => gsap.set(s, { yPercent: 0 }));
   hours();
   buildStrikes();
+  wrapBtns();
+  if (typeof setupLead === 'function' && leadReady) setupLead();
   try { localStorage.setItem('nana-lang', l); } catch (e) {}
 }
 
@@ -92,7 +122,7 @@ function splitWords(el) {
   const text = el.textContent.replace(/[ \t\n\r]+/g, ' ').trim();
   el.setAttribute('aria-label', text.replace(/\u00a0/g, ' '));
   el.innerHTML = text.split(' ').map(w => `<span class="w" aria-hidden="true"><span>${w}</span></span>`).join(' ');
-  if (!el.classList.contains('is-in') && !RM) gsap.set($$('.w>span', el), { yPercent: 108 });
+  if (!el.classList.contains('is-in') && !RM) gsap.set($$('.w>span', el), { yPercent: 112, rotate: 3 });
 }
 
 /* ---------- Nyitvatartás ---------- */
@@ -246,6 +276,7 @@ function heroLayout() {
 }
 
 const NAVS = '.hd__nav, .hd__tel, .hd__tools, #burger';
+const G = { ok: false, m: [0, 0], mT: [0, 0], run: false, vis: true, x: 0, y: 0, sc: 1, draw: null, init: null };
 /* Z.s: az ablak nagyítása, Z.p: a fotó útja a végső helyéig (0..1), Z.k: a nyitány lassú „leülése” */
 const Z = { s: 1, p: 0, k: 1 };
 function heroRender() {
@@ -255,6 +286,8 @@ function heroRender() {
   const sc = (P.s0.scale + (1 - P.s0.scale) * p) * k;
   if (k !== 1) { x = A.cx - (A.cx - x) * k; y = A.cy - (A.cy - y) * k; }
   $('#heroImg').style.transform = `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${sc.toFixed(5)})`;
+  G.x = x; G.y = y; G.sc = sc;
+  if (G.ok && G.vis) G.draw();
   if (Z.s !== H.lastS) {
     H.lastS = Z.s;
     $('#heroWin').style.clipPath = Z.s >= H.S - 1e-3 ? 'none' : `path('${H.arch(Z.s).full}')`;
@@ -280,7 +313,6 @@ function heroPrep() {
    a kupola ívén (közben előtűnik a kép), a talpon kifelé fut a kacskaringókkal, felkúszik a
    keret oldalán, és fent visszaér a logóhoz. A szakaszok sebessége a csatlakozásoknál egyezik. */
 function heroIntro() {
-  const words = $$('#heroH .w>span');
   const L1 = $('#hlL2').getTotalLength(), L2 = $('#hlGl').getTotalLength();
   const T1 = 1.05, T2 = gsap.utils.clamp(1.6, 2.9, T1 * L2 / Math.max(1, L1));
   const t1 = .72, t2 = t1 + T1;
@@ -293,10 +325,11 @@ function heroIntro() {
     .to(Z, { k: 1, duration: 2.8, ease: 'expo.out', onUpdate: heroRender }, t1 + .25)
     .to(['#hlGl', '#hlGr'], { strokeDashoffset: 0, duration: T2, ease: 'power1.out' }, t2)
     .to(['#hlCl', '#hlCr'], { strokeDashoffset: 0, duration: 1.3, ease: 'power2.out' }, t2 + .04)
-    .to(words, { yPercent: 0, duration: 1.25, stagger: .055 }, t2 - .1)
+    .add(() => revealSplit($('#heroH')), t2 - .1)
     .to('#heroR > *', { opacity: 1, y: 0, duration: 1.1, stagger: .09 }, t2 + .25)
     .to(NAVS, { opacity: 1, duration: 1, ease: 'power2.out', stagger: .06 }, t2 + T2 * .5)
-    .add(() => { $('#heroH').classList.add('is-in'); gsap.set(['.hd__logo', NAVS, '#heroR > *'], { clearProps: 'opacity,transform' }); gsap.set(words, { clearProps: 'transform' }); }, Math.max(t2 + T2, t1 + 3.1));
+    .add(() => { $('#heroH').classList.add('is-in'); gsap.set(['.hd__logo', NAVS, '#heroR > *'], { clearProps: 'opacity,transform' }); }, Math.max(t2 + T2, t1 + 3.1))
+    .add(() => { if (G.init) G.init(); }, '+=.6');
   return tl;
 }
 
@@ -311,7 +344,91 @@ function heroScroll() {
     .fromTo(Z, { p: 0 }, { p: 1, duration: .66, ease: 'power3.out' }, .06)
     .fromTo('#heroLines', { opacity: 1 }, { opacity: 0, duration: .22 }, .1)
     .to({}, { duration: .12 });
-  heroST = ScrollTrigger.create({ trigger: '.hero', start: 'top top', end: 'bottom bottom', scrub: SCRUB, animation: tl, invalidateOnRefresh: true });
+  if (FINE) { heroST = ScrollTrigger.create({ trigger: '.hero', start: 'top top', end: 'bottom bottom', scrub: SCRUB, animation: tl, invalidateOnRefresh: true }); return; }
+  // érintőn nem követi az ujjat: az első görgetésre egyszer kinyílik, a lap tetején visszacsukódik
+  tl.pause(0);
+  heroST = ScrollTrigger.create({ trigger: '.hero', start: 'top+=8 top', end: 'bottom bottom', animation: null,
+    onEnter: () => tl.timeScale(tl.duration() / 2.3).play(),
+    onLeaveBack: () => tl.timeScale(tl.duration() / 1.5).reverse() });
+}
+
+/* ---------- Belépő térben: mélységtérkép szerint mozdul az egérre, görgetésre az előtér közelebb jön ----------
+   Csak egérrel és valódi videókártyával; a vászon pontosan a fotó helyére rajzol, így a csere nem látszik. */
+function setupGL() {
+  if (!FINE || RM || !HW || /[?&]nogl/.test(location.search)) return;
+  const win = $('#heroWin');
+  const cv = document.createElement('canvas'); cv.className = 'hero__gl'; cv.setAttribute('aria-hidden', 'true');
+  win.insertBefore(cv, $('#heroCur'));
+  const opt = { alpha: false, antialias: false, depth: false, stencil: false, powerPreference: 'high-performance' };
+  let gl = cv.getContext('webgl2', opt); const gl2 = !!gl;
+  if (!gl) gl = cv.getContext('webgl', opt);
+  if (!gl) { cv.remove(); return; }
+  const VS = 'attribute vec2 a;varying vec2 v;void main(){v=vec2(a.x*.5+.5,.5-a.y*.5);gl_Position=vec4(a,0.,1.);}';
+  const FS = ['precision highp float;varying vec2 v;',
+    'uniform sampler2D uI,uD;uniform vec2 uRes,uOff,uSize,uM;uniform float uZ;',
+    'const vec2 C=vec2(.5,.4);',
+    'void main(){vec2 t=(v*uRes-uOff)/uSize;vec2 p=t;',
+    ' for(int i=0;i<3;i++){float d=texture2D(uD,p).r;p=t+uM*(d-.45)*vec2(.014,.008)-(t-C)*(d-.35)*uZ;}',
+    ' gl_FragColor=vec4(texture2D(uI,clamp(p,0.,1.)).rgb,1.);}'].join('\n');
+  const sh = (tp, src) => { const x = gl.createShader(tp); gl.shaderSource(x, src); gl.compileShader(x); return gl.getShaderParameter(x, gl.COMPILE_STATUS) ? x : null; };
+  const vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
+  if (!vs || !fs) { cv.remove(); return; }
+  const pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
+  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) { cv.remove(); return; }
+  gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const al = gl.getAttribLocation(pr, 'a'); gl.enableVertexAttribArray(al); gl.vertexAttribPointer(al, 2, gl.FLOAT, false, 0, 0);
+  const U = {}; ['uI', 'uD', 'uRes', 'uOff', 'uSize', 'uM', 'uZ'].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
+  const tex = (unit, src, mip) => {
+    const tx = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tx);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src);
+    // WebGL2-ben a nem kettőhatvány képnek is lehet mipmapje: kicsinyítve sem vibrál
+    if (mip && gl2) { gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
+    else gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  };
+  let cw = 0, ch = 0;
+  const size = () => {
+    cw = stage.clientWidth; ch = stage.clientHeight;
+    const dpr = Math.min(devicePixelRatio || 1, 1.5);
+    cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+    gl.viewport(0, 0, cv.width, cv.height); gl.uniform2f(U.uRes, cw, ch);
+  };
+  G.draw = () => {
+    const P = H.photo; if (!P) return;
+    gl.uniform2f(U.uOff, G.x, G.y); gl.uniform2f(U.uSize, P.Wp * G.sc, P.Hp * G.sc);
+    gl.uniform2f(U.uM, G.m[0], G.m[1]); gl.uniform1f(U.uZ, Z.p * .045);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
+  const frame = () => {
+    let moving = false;
+    for (let i = 0; i < 2; i++) { const d = G.mT[i] - G.m[i]; if (Math.abs(d) > .0008) { G.m[i] += d * .06; moving = true; } else G.m[i] = G.mT[i]; }
+    G.draw();
+    if (!moving || !G.vis) { G.run = false; gsap.ticker.remove(frame); }
+  };
+  const kick = () => { if (G.ok && G.vis && !G.run) { G.run = true; gsap.ticker.add(frame); } };
+  G.init = () => {
+    G.init = null;
+    const im = new Image(), dep = new Image();
+    im.src = 'img/hero-2800.webp?v=7'; dep.src = 'img/hero-depth.webp?v=7';
+    const idle = window.requestIdleCallback || (f => setTimeout(f, 1));
+    const bm = x => window.createImageBitmap ? createImageBitmap(x).catch(() => x) : Promise.resolve(x);
+    idle(() => {
+      Promise.all([im.decode(), dep.decode()]).then(() => Promise.all([bm(im), bm(dep)])).then(b => {
+        tex(0, b[0], true); tex(1, b[1], false);
+        gl.uniform1i(U.uI, 0); gl.uniform1i(U.uD, 1);
+        G.ok = true; size(); G.draw();
+        HTML.classList.add('hero-3d');
+      }).catch(() => {});
+    }, { timeout: 1500 });
+  };
+  stage.addEventListener('pointermove', e => { G.mT[0] = (e.clientX / innerWidth - .5) * 2; G.mT[1] = (e.clientY / innerHeight - .5) * 2; kick(); });
+  stage.addEventListener('pointerleave', () => { G.mT[0] = G.mT[1] = 0; kick(); });
+  new IntersectionObserver(es => { G.vis = es[0].isIntersecting; if (G.vis && G.ok) G.draw(); }).observe(stage);
+  cv.addEventListener('webglcontextlost', e => { e.preventDefault(); G.ok = false; HTML.classList.remove('hero-3d'); });
+  G.resize = () => { if (G.ok) { size(); G.draw(); } };
 }
 
 /* Rajzolás közben a vonal saját rétegre kerül: a változása így csak a vékony vonalat festi újra,
@@ -344,7 +461,7 @@ function buildStrikes() {
   if (RM) { paths.forEach(p => p.style.strokeDashoffset = 0); return; }
   const tl = gsap.timeline();
   paths.forEach((p, i) => tl.to(p, { strokeDashoffset: 0, duration: 1.2, ease: FLOW }, i * .8));
-  strikeST = ScrollTrigger.create(Object.assign({ trigger: h, start: 'top 80%', end: 'bottom 64%', scrub: SCRUB, animation: tl }, live($$('.strike svg', h))));
+  strikeST = drive(tl, { trigger: h, start: 'top 80%', end: 'bottom 64%', touch: 'top 72%' }, $$('.strike svg', h), 3.2);
 }
 
 /* ---------- Keretek ---------- */
@@ -375,8 +492,8 @@ function setupFrames(container) {
     const early = inShop && f.getBoundingClientRect().left < innerWidth * .9;
     // a keret vonala a görgetéssel együtt nő körbe a kép körül
     const draw = gsap.fromTo(paths, { strokeDashoffset: OFF }, { strokeDashoffset: 0, ease: FLOW });
-    ScrollTrigger.create(Object.assign({ trigger: early ? '.shop' : f, animation: draw, scrub: SCRUB },
-      early ? { start: 'top 82%', end: 'top top' } : inShop ? { containerAnimation: container, start: 'left 100%', end: shopEnd(f, 38) } : { start: 'top 96%', end: 'center 42%' }, live(svg)));
+    drive(draw, Object.assign({ trigger: early ? '.shop' : f },
+      early ? { start: 'top 82%', end: 'top top' } : inShop ? { containerAnimation: container, start: 'left 100%', end: shopEnd(f, 38) } : { start: 'top 96%', end: 'center 42%' }), svg, 1.7);
     // a kép egyszer, a saját tempójában tűnik elő: a papírszínű függöny lefelé húzódik róla
     ScrollTrigger.create(Object.assign({ trigger: early ? '.shop' : f, once: true, onEnter: () => gsap.to(cur, { scaleY: 0, transformOrigin: '50% 100%', duration: 1.3, ease: 'expo.inOut' }) },
       early ? { start: 'top 55%' } : inShop ? { containerAnimation: container, start: 'left 92%' } : { start: 'top 86%' }));
@@ -450,8 +567,8 @@ function setupCarts(container) {
       .to(inner, { strokeDashoffset: 0, duration: 1 }, t + .12);
     const inShop = container && el.closest('#shopTrack') && !isMob();
     const big = el.classList.contains('menu__card');
-    ScrollTrigger.create(Object.assign({ trigger: el, animation: tl, scrub: SCRUB },
-      inShop ? { containerAnimation: container, start: 'left 100%', end: shopEnd(el, 42) } : big ? { start: 'top 92%', end: 'top 12%' } : { start: 'top 94%', end: 'center 48%' }, live(s)));
+    drive(tl, Object.assign({ trigger: el },
+      inShop ? { containerAnimation: container, start: 'left 100%', end: shopEnd(el, 42) } : big ? { start: 'top 92%', end: 'top 12%' } : { start: 'top 94%', end: 'center 48%' }), s, big ? 2.4 : 2);
     if (fill) {
       gsap.set(fill, { opacity: 0 });
       ScrollTrigger.create({ trigger: el, start: 'top 86%', once: true, onEnter: () => gsap.to(fill, { opacity: 1, duration: 1.6, ease: 'power2.out' }) });
@@ -468,7 +585,7 @@ function setupOrns() {
     gsap.set([...c, ...s], { strokeDashoffset: OFF });
     const tl = gsap.timeline({ defaults: { ease: FLOW } });
     tl.to(c, { strokeDashoffset: 0, duration: .5 }, 0).to(s, { strokeDashoffset: 0, duration: 1 }, .32);
-    ScrollTrigger.create(Object.assign({ trigger: o, animation: tl, scrub: SCRUB, start: 'top 97%', end: 'top 58%' }, live(o)));
+    drive(tl, { trigger: o, start: 'top 97%', end: 'top 58%' }, o, 1.8);
   });
 }
 
@@ -551,7 +668,7 @@ function setupHouse() {
   if (RM) { gsap.set([...lines, ...fp], { strokeDashoffset: 0 }); gsap.set('#houseFill', { scaleX: 1 }); signR.setAttribute('width', 330); steps.forEach(s => s.classList.add('is-on')); return; }
 
   // a keret már a beérkezés közben körbeér
-  ScrollTrigger.create(Object.assign({ trigger: '.house', start: 'top 88%', end: 'top 5%', scrub: SCRUB, animation: gsap.fromTo(fp, { strokeDashoffset: OFF }, { strokeDashoffset: 0, ease: FLOW }) }, live($('#houseFrame'))));
+  drive(gsap.fromTo(fp, { strokeDashoffset: OFF }, { strokeDashoffset: 0, ease: FLOW }), { trigger: '.house', start: 'top 88%', end: 'top 5%', touch: 'top 70%' }, $('#houseFrame'), 1.8);
 
   // A villa a talajtól felfelé nő, mint egy emelkedő szint: minden vonal akkor indul, amikor
   // a szint eléri az alját, alulról felfelé (vízszintesnél balról jobbra) rajzolódik, és
@@ -566,31 +683,69 @@ function setupHouse() {
     const rev = Math.abs(a.y - b.y) > 8 ? a.y < b.y : a.x > b.x;
     draw.fromTo(p, { strokeDashoffset: rev ? -OFF : OFF }, { strokeDashoffset: 0, duration: Math.max(.06, L / v), ease: FLOW }, Math.max(0, (Yb - bot) / R) * .8);
   });
-  // már a szakasz beúszásakor elindul, megálláskor kb. félig kész, utána a görgetéssel nő tovább
-  const pinLen = () => $('.house').offsetHeight - innerHeight;
-  houseDrawST = ScrollTrigger.create({ trigger: '.house', start: 'top 80%', end: () => '+=' + (innerHeight * .8 + pinLen() * .4), scrub: SCRUB, animation: draw, invalidateOnRefresh: true });
+  // A mai fotó a torony ívéből nyílik ki: először csak a rajzolt torony helyén látszik, aztán az ív szétnyílik a kép fölött.
+  const neu = $('#houseNew'), dw = $('#houseDraw');
+  const R0 = { k: 0 };
+  const ease = gsap.parseEase('power2.in');
+  const archClip = () => {
+    const k = R0.k;
+    if (k <= 0) { neu.style.opacity = 0; neu.style.clipPath = ''; return; }
+    neu.style.opacity = 1;
+    if (k >= 1) { neu.style.clipPath = 'none'; return; }
+    const W = pic.offsetWidth, Hh = pic.offsetHeight, e = ease(k);
+    // a torony közepe a rajzon: x 415, csúcsa y 206 (viewBox 120 190 890 580)
+    const cx = (415 - 120) / 890 * W, top0 = (206 - 190) / 580 * Hh;
+    const w = W * .12 + (W * 3.4 - W * .12) * e, top = top0 + (-Hh * 1.7 - top0) * e;
+    neu.style.clipPath = `path('${archHalves(cx - w / 2, top, w, Hh + 4 - top).full}')`;
+  };
+  addEventListener('resize', archClip);
 
-  // A ház: a rajz nő. Akkor: rajzlap-tónus, és a régi cégtábla felirata kiíródik a homlokzatra. Ma: a mai fotó.
-  const tl = gsap.timeline({ defaults: { ease: 'none' } });
-  tl.fromTo('#houseFill', { scaleX: 0 }, { scaleX: .5, duration: .5 }, 0)
-    .to('#houseFill', { scaleX: 1, duration: .18 }, .5)
-    .to('#houseSheet', { opacity: 1, duration: .1 }, .44)
-    .fromTo(signR, { attr: { width: 0 } }, { attr: { width: 330 }, duration: .1, ease: 'power1.inOut' }, .47)
-    .to('.house__credit', { opacity: 1, duration: .06 }, .5)
-    .fromTo('#houseNew', { opacity: 0 }, { opacity: 1, duration: .16 }, .63)
-    .to('#houseDraw', { opacity: 0, duration: .12 }, .67)
-    .to('.house__credit', { opacity: 0, duration: .06 }, .72)
-    .to({}, { duration: .16 }, .84);
-  houseST = ScrollTrigger.create({
-    trigger: '.house', start: 'top top', end: 'bottom bottom', scrub: SCRUB, animation: tl,
-    onUpdate: self => { const p = self.progress; show(p < .5 ? 0 : p < .68 ? 1 : 2); }
-  });
+  if (FINE) {
+    // már a szakasz beúszásakor elindul, megálláskor kb. félig kész, utána a görgetéssel nő tovább
+    const pinLen = () => $('.house').offsetHeight - innerHeight;
+    houseDrawST = ScrollTrigger.create(Object.assign({ trigger: '.house', start: 'top 80%', end: () => '+=' + (innerHeight * .8 + pinLen() * .4), scrub: SCRUB, animation: draw, invalidateOnRefresh: true }, live(dw)));
+    // A ház: a rajz nő. Akkor: rajzlap-tónus, és a régi cégtábla felirata kiíródik a homlokzatra. Ma: a mai fotó a torony ívéből.
+    const tl = gsap.timeline({ defaults: { ease: 'none' } });
+    tl.fromTo('#houseFill', { scaleX: 0 }, { scaleX: .5, duration: .5 }, 0)
+      .to('#houseFill', { scaleX: 1, duration: .18 }, .5)
+      .to('#houseSheet', { opacity: 1, duration: .1 }, .44)
+      .fromTo(signR, { attr: { width: 0 } }, { attr: { width: 330 }, duration: .1, ease: 'power1.inOut' }, .47)
+      .to('.house__credit', { opacity: 1, duration: .06 }, .5)
+      .fromTo(R0, { k: 0 }, { k: 1, duration: .22, onUpdate: archClip }, .6)
+      .to(dw, { opacity: 0, duration: .1 }, .72)
+      .to('.house__credit', { opacity: 0, duration: .06 }, .72)
+      .to({}, { duration: .14 }, .86);
+    houseST = ScrollTrigger.create({
+      trigger: '.house', start: 'top top', end: 'bottom bottom', scrub: SCRUB, animation: tl,
+      onUpdate: self => { const p = self.progress; show(p < .5 ? 0 : p < .66 ? 1 : 2); }
+    });
+  } else {
+    // érintőn egy rövid film: rajz, régi cégtábla, majd a mai fotó
+    draw.pause(0);
+    const T = draw.duration();
+    const film = gsap.timeline({ paused: true });
+    film.call(() => draw.timeScale(T / 2.6).play(0), null, 0)
+      .fromTo('#houseFill', { scaleX: 0 }, { scaleX: .5, duration: 2.6, ease: 'none' }, 0)
+      .call(() => show(1), null, 2.7)
+      .to('#houseSheet', { opacity: 1, duration: .6 }, 2.7)
+      .fromTo(signR, { attr: { width: 0 } }, { attr: { width: 330 }, duration: 1, ease: 'power1.inOut' }, 2.9)
+      .call(() => show(2), null, 5.2)
+      .to('#houseFill', { scaleX: 1, duration: 1.4, ease: 'power2.inOut' }, 5.2)
+      .fromTo(R0, { k: 0 }, { k: 1, duration: 1.9, ease: 'power1.inOut', onUpdate: archClip }, 5.2)
+      .to(dw, { opacity: 0, duration: .8 }, 6.1);
+    ScrollTrigger.create({ trigger: '#housePic', start: 'top 62%', once: true, onEnter: () => film.play() });
+  }
 }
 
 /* ---------- Címek felúszása ---------- */
-function revealSplit(el) {
+function lineDelays(el) {
+  let top = null, li = -1, j = 0;
+  return $$('.w', el).map(w => { const t = w.offsetTop; if (top === null || Math.abs(t - top) > 4) { top = t; li++; j = 0; } return li * .13 + j++ * .03; });
+}
+function revealSplit(el, delay) {
   el.classList.add('is-in');
-  gsap.to($$('.w>span', el), { yPercent: 0, duration: 1.2, stagger: .06, ease: EASE });
+  const d = lineDelays(el);
+  $$('.w>span', el).forEach((sp, i) => gsap.to(sp, { yPercent: 0, rotate: 0, duration: 1.35, ease: EASE, delay: (delay || 0) + d[i] }));
 }
 function setupSplits() {
   $$('.split').forEach(el => {
@@ -605,11 +760,18 @@ let shopTween = null;
 function setupShop() {
   const sec = $('.shop'), track = $('#shopTrack');
   const mm = gsap.matchMedia();
-  mm.add('(min-width: 900px)', () => {
+  mm.add('(min-width: 900px) and (hover: hover) and (pointer: fine)', () => {
     const dist = () => Math.max(0, track.scrollWidth - innerWidth);
     const size = () => { sec.style.height = (innerHeight + dist()) + 'px'; };
     size();
-    shopTween = gsap.to(track, { x: () => -dist(), ease: 'none', scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: .5, invalidateOnRefresh: true, onRefreshInit: size } });
+    const bar = $('#shopBar');
+    shopTween = gsap.to(track, { x: () => -dist(), ease: 'none', scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: .5, invalidateOnRefresh: true, onRefreshInit: size,
+      onUpdate: st => gsap.set(bar, { scaleX: st.progress }) } });
+    // a kép a kereten belül lassabban halad, mint a sor: mélységet ad, a keret nem dől meg
+    if (!RM) $$('.frame__in img', track).forEach(im => {
+      gsap.set(im, { scale: 1.16 });
+      gsap.fromTo(im, { xPercent: -6 }, { xPercent: 6, ease: 'none', scrollTrigger: { trigger: im.closest('.card'), containerAnimation: shopTween, start: 'left right', end: 'right left', scrub: true } });
+    });
     return () => { sec.style.height = ''; shopTween = null; };
   });
   return shopTween;
@@ -657,17 +819,107 @@ function setupPeek() {
   new IntersectionObserver(es => es.forEach(en => { if (!en.isIntersecting) { hide(); gsap.set(peek, { autoAlpha: 0 }); } })).observe(cols);
 }
 
-/* ---------- Vélemények ---------- */
-function setupQuotes() {
-  const qs = $$('#quotes .q'), bs = $$('#quotesNav button');
-  let i = 0, t;
-  const go = n => { i = (n + qs.length) % qs.length; qs.forEach((q, k) => q.classList.toggle('is-on', k === i)); bs.forEach((b, k) => b.setAttribute('aria-selected', k === i ? 'true' : 'false')); };
-  const run = () => { clearInterval(t); if (!RM) t = setInterval(() => go(i + 1), 7000); };
-  bs.forEach((b, k) => b.addEventListener('click', () => { go(k); run(); }));
-  const st = $('#quotes');
-  st.addEventListener('pointerenter', () => clearInterval(t));
-  st.addEventListener('pointerleave', run);
-  run();
+/* ---------- Mentesség: a bevezető mondat szavanként sötétedik (egérrel a görgetéssel, érintőn egyszer) ---------- */
+let leadST;
+function setupLead() {
+  const p = $('.free .lead'); if (!p) return;
+  const txt = p.textContent.replace(/[ \t\n\r]+/g, ' ').trim();
+  p.innerHTML = txt.split(' ').map(w => `<span class="wl">${w}</span>`).join(' ');
+  const ws = $$('.wl', p);
+  if (leadST) { leadST.kill(); leadST = null; }
+  if (RM) { ws.forEach(w => w.classList.add('on')); return; }
+  const lit = n => ws.forEach((w, i) => w.classList.toggle('on', i < n));
+  if (FINE) leadST = ScrollTrigger.create({ trigger: p, start: 'top 82%', end: 'bottom 50%', onUpdate: st => lit(Math.round(st.progress * ws.length)) });
+  else leadST = ScrollTrigger.create({ trigger: p, start: 'top 80%', once: true, onEnter: () => ws.forEach((w, i) => setTimeout(() => w.classList.add('on'), 120 + i * 70)) });
+}
+
+/* ---------- Szalon: a kép a kereten belül lassabban mozdul (csak egérrel) ---------- */
+function setupParallax() {
+  if (!FINE || RM) return;
+  $$('.salon img.px').forEach(im => {
+    gsap.set(im, { scale: 1.12 });
+    gsap.fromTo(im, { yPercent: -5 }, { yPercent: 5, ease: 'none', scrollTrigger: { trigger: im.closest('.frame'), start: 'top bottom', end: 'bottom top', scrub: true } });
+  });
+}
+
+/* ---------- Étlap: a kártya papírlapként emelkedik fel és simul ki ---------- */
+function setupMenuRise() {
+  const c = $('.menu__card'); if (!c || RM) return;
+  if (FINE && HW) {
+    gsap.fromTo(c, { rotateX: 11, y: 90, scale: .955, transformPerspective: 1500, transformOrigin: '50% 100%' },
+      { rotateX: 0, y: 0, scale: 1, ease: 'none', scrollTrigger: { trigger: '.menu', start: 'top bottom', end: 'top 12%', scrub: .6,
+        onToggle: st => c.classList.toggle('is-live', st.isActive) } });
+  } else {
+    gsap.set(c, { y: 60, rotateX: 7, transformPerspective: 1500, transformOrigin: '50% 100%', opacity: .001 });
+    ScrollTrigger.create({ trigger: '.menu', start: 'top 82%', once: true, onEnter: () => gsap.to(c, { y: 0, rotateX: 0, opacity: 1, duration: 1.5, ease: 'expo.out', clearProps: 'transform,opacity' }) });
+  }
+}
+
+/* ---------- Puha görgetés egérrel: Lenis a GSAP órájáról hajtva, érintőn natív görgetés ---------- */
+let lenis = null;
+function setupLenis() {
+  if (!FINE || RM || !window.Lenis) return;
+  lenis = new Lenis({ lerp: .085, wheelMultiplier: .9, smoothWheel: true });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add(t => lenis.raf(t * 1000));
+  gsap.ticker.lagSmoothing(0);
+  window.__lenis = lenis;
+}
+
+/* ---------- Kupola-kurzor: kis barack pötty, mögötte a kupola íve; linken összehúzódik, képen kitágul ---------- */
+function setupCursor() {
+  if (!FINE || RM) return;
+  const c = document.createElement('div'); c.className = 'cur'; c.setAttribute('aria-hidden', 'true');
+  c.innerHTML = `<span class="cur__a"><svg viewBox="0 0 30 38"><path d="${archHalves(1, 1, 28, 36).full}"/></svg></span><span class="cur__d"></span>`;
+  document.body.append(c);
+  const A = $('.cur__a', c), D = $('.cur__d', c);
+  let tx = -99, ty = -99, ax = -99, ay = -99, dx = -99, dy = -99, raf = 0, seen = false;
+  const loop = () => {
+    ax += (tx - ax) * .16; ay += (ty - ay) * .16; dx += (tx - dx) * .5; dy += (ty - dy) * .5;
+    A.style.transform = `translate3d(${ax.toFixed(1)}px,${ay.toFixed(1)}px,0)`;
+    D.style.transform = `translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0)`;
+    raf = Math.abs(tx - ax) + Math.abs(ty - ay) > .2 ? requestAnimationFrame(loop) : 0;
+  };
+  addEventListener('mousemove', e => {
+    tx = e.clientX; ty = e.clientY;
+    if (!seen) { seen = true; ax = dx = tx; ay = dy = ty; c.classList.add('is-on'); HTML.classList.add('has-cur'); }
+    if (!raf) raf = requestAnimationFrame(loop);
+  }, { passive: true });
+  document.addEventListener('mouseover', e => {
+    const t = e.target; if (!t.closest) return;
+    const link = !!t.closest('a, button, li[data-peek]');
+    c.classList.toggle('is-link', link);
+    c.classList.toggle('is-photo', !link && !!t.closest('.frame, .house__pic, .hero__stage'));
+    c.classList.toggle('is-dark', !!t.closest('.ft'));
+  });
+  document.addEventListener('mouseleave', () => c.classList.remove('is-on'));
+  document.addEventListener('mouseenter', () => { if (seen) c.classList.add('is-on'); });
+}
+
+/* ---------- Gombok: a felirat felgördül, a kitöltés kupolaívként emelkedik; egérrel kicsit a mutató felé húzódnak ---------- */
+function wrapBtns() {
+  $$('.btn').forEach(b => {
+    if ($('.btn__r', b)) return;
+    const h = b.innerHTML.trim();
+    b.innerHTML = `<span class="btn__r"><span>${h}</span><span aria-hidden="true">${h}</span></span>`;
+  });
+}
+function setupMagnet() {
+  if (!FINE || RM) return;
+  $$('.btn').forEach(b => {
+    const qx = gsap.quickTo(b, 'x', { duration: .6, ease: 'power3.out' }), qy = gsap.quickTo(b, 'y', { duration: .6, ease: 'power3.out' });
+    b.addEventListener('pointermove', e => {
+      const r = b.getBoundingClientRect();
+      qx((e.clientX - r.left - r.width / 2) * .22); qy((e.clientY - r.top - r.height / 2) * .3);
+    });
+    b.addEventListener('pointerleave', () => { qx(0); qy(0); });
+  });
+}
+
+/* ---------- Függöny-lábléc: egérrel a tartalom felhúzódik a lábléc elől (ha a lábléc elfér a képernyőn) ---------- */
+function curtain() {
+  const ft = $('.ft');
+  HTML.classList.toggle('curtain', FINE && !RM && ft.offsetHeight < innerHeight - 60);
 }
 
 /* ---------- Fejléc, menü ---------- */
@@ -687,11 +939,12 @@ function setupHeader() {
   const toggle = open => {
     bg.setAttribute('aria-expanded', open); dr.classList.toggle('is-open', open); dr.setAttribute('aria-hidden', !open);
     document.body.classList.toggle('menu-open', open); document.documentElement.style.overflow = open ? 'hidden' : '';
-    if (open && !RM) gsap.fromTo($$('#drawer nav a'), { yPercent: 40, opacity: 0 }, { yPercent: 0, opacity: 1, duration: .9, stagger: .06, delay: .1 });
+    if (lenis) open ? lenis.stop() : lenis.start();
+    if (open && !RM) gsap.fromTo($$('#drawer nav a'), { yPercent: 60, rotate: 2, opacity: 0 }, { yPercent: 0, rotate: 0, opacity: 1, duration: 1.1, stagger: .07, delay: .42 });
   };
   bg.addEventListener('click', () => toggle(bg.getAttribute('aria-expanded') !== 'true'));
   $$('#drawer a').forEach(a => a.addEventListener('click', () => toggle(false)));
-  $$('.lang button').forEach(b => b.addEventListener('click', () => { if (b.dataset.lang !== lang) { applyLang(b.dataset.lang); requestAnimationFrame(() => { heroLayout(); ScrollTrigger.refresh(); }); } }));
+  $$('.lang button').forEach(b => b.addEventListener('click', () => { if (b.dataset.lang !== lang) { applyLang(b.dataset.lang); requestAnimationFrame(() => { heroLayout(); ScrollTrigger.refresh(); curtain(); }); } }));
 }
 
 /* ---------- Horgonyok: natív, sima ugrás (a görgetést nem vesszük át, így az mindenhol a rendszeré marad) ---------- */
@@ -702,8 +955,17 @@ function setupAnchors() {
     const t = id === '#top' ? null : $(id);
     if (id !== '#top' && !t) return;
     e.preventDefault();
-    const top = t ? t.getBoundingClientRect().top + scrollY : 0;
-    scrollTo({ top, behavior: RM ? 'auto' : 'smooth' });
+    if (lenis) {
+      // a helyet az offsetTop láncból számoljuk: a felemelkedő (döntött) kártya mérete így nem téveszt
+      const pinned = t && (t.classList.contains('house') || t.classList.contains('shop'));
+      const h = t && !pinned ? $('h2', t) : null;
+      let y = 0, e = h || t;
+      while (e) { y += e.offsetTop; e = e.offsetParent; }
+      lenis.scrollTo(t ? Math.max(0, y - (h ? 130 : 0)) : 0, { duration: 1.6 });
+    } else {
+      const top = t ? t.getBoundingClientRect().top + scrollY : 0;
+      scrollTo({ top, behavior: RM ? 'auto' : 'smooth' });
+    }
     history.replaceState(null, '', id);
   }));
 }
@@ -711,7 +973,7 @@ function setupAnchors() {
 /* ---------- Indítás ---------- */
 function reveals() {
   if (RM) { gsap.set('.rv', { opacity: 1, y: 0 }); return; }
-  ScrollTrigger.batch('.rv', { start: 'top 88%', once: true, onEnter: b => gsap.to(b, { opacity: 1, y: 0, duration: 1.1, stagger: .09, ease: EASE }) });
+  ScrollTrigger.batch('.rv', { start: 'top 88%', once: true, onEnter: b => gsap.to(b, { opacity: 1, y: 0, duration: 1.3, stagger: .1, ease: EASE }) });
 }
 
 function ready() {
@@ -724,7 +986,9 @@ function ready() {
 function init() {
   $('#heroH').classList.add('split');
   if (lang !== 'hu') applyLang(lang); else { $$('.split').forEach(splitWords); hours(); }
+  wrapBtns();
   heroLayout();
+  setupLenis();
   setupAnchors();
   setupHeader();
   buildStrikes();
@@ -735,7 +999,13 @@ function init() {
   setupOrns();
   setupSplits();
   setupPeek();
-  setupQuotes();
+  setupLead(); leadReady = true;
+  setupParallax();
+  setupMenuRise();
+  setupCursor();
+  setupMagnet();
+  setupGL();
+  curtain();
   reveals();
   if (RM) {
     gsap.set('.hl', { strokeDashoffset: 0 }); gsap.set('#heroCur', { autoAlpha: 0 }); gsap.set($$('#heroH .w>span'), { yPercent: 0 });
@@ -750,7 +1020,7 @@ function init() {
   addEventListener('resize', () => {
     if (Math.abs(innerWidth - rw) < 2 && Math.abs(innerHeight - rh) < 120) return;
     rw = innerWidth; rh = innerHeight;
-    heroLayout(); buildStrikes(); houseFrameGeom();
+    heroLayout(); buildStrikes(); houseFrameGeom(); curtain(); if (G.resize) G.resize();
     $$('.frame').forEach(frameGeom); $$('[data-cart]').forEach(cartGeom);
     ScrollTrigger.refresh();
   });

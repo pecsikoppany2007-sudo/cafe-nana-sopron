@@ -79,8 +79,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .drawer{display:none}
 
 /* 1. Belépő */
-.hero{position:relative;height:250vh;height:250svh}
-.hero__stage{position:sticky;top:0;height:100vh;height:100svh;min-height:560px;overflow:hidden;contain:paint}
+.hero{position:relative;height:100vh;height:100svh;min-height:560px}
+.hero__stage{position:relative;top:0;height:100vh;height:100svh;min-height:560px;overflow:hidden;contain:paint}
 /* Az ablak egy vágóút (ív), ami görgetésre képernyőnyire nő. A kép maga a réteg, keret és háttér nélkül,
    így a böngésző egyszer, a saját felbontásán rajzolja meg, és a mozgatás nem raszterez újra. */
 .hero__win{position:absolute;inset:0;will-change:transform}
@@ -301,7 +301,6 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .drawer__foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid rgba(191,139,98,.4)}
   .drawer__foot>a{color:var(--ink);text-decoration:none;font-weight:520}
 
-  .hero{height:220vh;height:220svh}
   .hero__l,.hero__r{left:var(--pad);right:var(--pad);width:auto;bottom:auto;text-align:center}
   .hero__l{top:var(--ht,520px)}
   .hero__r{top:calc(var(--ht,520px) + var(--hh,130px) + 14px)}
@@ -371,7 +370,6 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .hero__gl{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .9s ease}
 .hero-3d .hero__gl{opacity:1}
 /* érintőn a belépő rövidebb, a nyitás egyszer, időre fut le */
-.touch .hero{height:165vh;height:165svh}
 .touch .house{height:auto}
 .touch .house__stage{position:relative;height:auto;min-height:0;padding-top:clamp(90px,12vh,140px);padding-bottom:clamp(70px,10vh,110px)}
 @media (min-width:900px){
@@ -398,25 +396,22 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .menu li[data-peek]:hover b::before{transform:scaleX(1)}
   .menu li b{position:relative}
 }
-/* kupola-kurzor */
+/* kurzor: a kupola csúcsdísze kicsiben; a gömb közepe a mutató helye */
 .cur{position:fixed;left:0;top:0;z-index:120;pointer-events:none;opacity:0;transition:opacity .3s}
 .cur.is-on{opacity:1}
-.cur__a,.cur__d{position:fixed;left:0;top:0;will-change:transform}
-.cur__a svg{display:block;width:30px;height:38px;margin:-24px 0 0 -15px;overflow:visible;fill:none;stroke:var(--apricot);stroke-width:1.1;transition:transform .55s cubic-bezier(.22,.8,.18,1),opacity .35s,stroke .3s}
-.cur__d::after{content:"";position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:var(--apricot);transition:transform .45s cubic-bezier(.22,.8,.18,1),background-color .3s}
-/* linken a kurzor nem ül rá a feliratra: csak egy apró, sötét pötty marad, a link maga reagál */
-.cur.is-link .cur__a svg{transform:scale(.3);opacity:0}
-.cur.is-link .cur__d::after{transform:scale(.7);background:var(--ink);box-shadow:0 0 0 1.5px var(--paper)}
-.cur.is-photo .cur__a svg{transform:scale(1.9);stroke:var(--paper)}
-.cur.is-photo .cur__d::after{background:var(--paper)}
-.cur.is-dark .cur__a svg{stroke:#E2C3A4}
-.cur.is-dark .cur__d::after{background:#E2C3A4}
+.cur__f{position:fixed;left:0;top:0;width:0;height:0;will-change:transform}
+.cur__f svg{position:absolute;left:-6px;top:-14.6px;width:12px;height:22px;overflow:visible;fill:var(--apricot);transform-origin:6px 14.6px;transition:transform .45s cubic-bezier(.22,.8,.18,1),fill .3s}
+.cur.is-link .cur__f svg{transform:scale(.62);fill:var(--ink)}
+.cur.is-photo .cur__f svg{fill:var(--paper)}
+.cur.is-dark .cur__f svg{fill:#E2C3A4}
 .has-cur,.has-cur a,.has-cur button,.has-cur .menu li[data-peek]{cursor:none}
 /* papírszemcse (csak valódi videókártyával), keverési mód nélkül */
-.grain body::after{content:"";position:fixed;inset:0;z-index:110;pointer-events:none;background:url(../img/grain.png?v=7) repeat;opacity:.045}
+.grain body::after{content:"";position:fixed;inset:0;z-index:110;pointer-events:none;background:url(../img/grain.png?v=8) repeat;opacity:.045}
 /* függöny-lábléc: egérrel a tartalom felhúzódik előle */
 .curtain main{position:relative;z-index:1;background:var(--paper);box-shadow:0 30px 60px -30px rgba(27,34,50,.35)}
 .curtain .ft{position:sticky;bottom:0;z-index:0}
 @media (prefers-reduced-motion:reduce){.btn::before,.btn__r>span{transition:none}}
 
 .rm .hero{height:100vh;height:100svh}
+@media (hover:hover) and (pointer:fine){.hero__stage{will-change:transform}}
+.free{box-shadow:0 -34px 60px -34px rgba(27,34,50,.22)}

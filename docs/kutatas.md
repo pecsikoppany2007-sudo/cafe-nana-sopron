@@ -90,3 +90,9 @@ kopi kérése: a Café Nana vonala marad (krém papír, kupolakék tinta, barack
 - **Vélemények:** csak Google, három valódi, szó szerinti magyar vélemény (Noémi és Bettina 2026. október, Árpád 2024), „4,6 csillag a Google-on, több mint 250 értékelésből” (2026-11-05: 251), gomb közvetlenül a Google véleményíró ablakára (placeid ChIJx0r3KhM9bEcRC8vJmlG1tE4). A német oldalon fordítás, jelölve.
 - **Egyéb:** papírszemcse (csak valódi videókártyával, keverési mód nélkül), függöny-lábléc egérrel, a mobil menü kupolaívként emelkedik fel, asset-verzió ?v=7.
 - **Mérés (Chrome-trace):** Retina asztali gép, minden asztali hatással 0,1% kieső képkocka; iPhone-emuláció 4× lassítással 0,2%. Vízszintes túlcsordulás 320–1920 px között nincs, HU és DE, csökkentett mozgás rendben, menülinkek a címnél érnek célba.
+
+## v3.1 (2026-11-05): kopi visszajelzése
+- **Kurzor:** a nagy kupola-ív helyett kicsi, a kupola csúcsdísze (hegyes csúcs és gömb, barack színben), mozgás közben inga módjára picit kileng. Linken kisebb és sötét, fotón krémszínű.
+- **Nyitókép:** görgetésre már nem nyílik ki teljes képernyőre. Az ív a helyén marad, a fotó benne lassan közelebb jön (egérrel a mélységtérkép szerint az előtér jobban), a belépő lassabban halad, és a következő szakasz papírja puha árnyékkal rácsúszik. Érintőn natív görgetés, semmi nem követi az ujjat.
+- **A régi fekete-fehér fotó** (sopronanno.hu vízjellel) nem került be: a vízjelet nem távolítjuk el. Tiszta, engedélyezett példányt a sopronanno.hu-tól vagy a tulajdonostól kérünk.
+- Mérés: gépen 0,1%, telefon-emuláció 4× lassítással 0,2% kieső képkocka. Asset-verzió ?v=8.

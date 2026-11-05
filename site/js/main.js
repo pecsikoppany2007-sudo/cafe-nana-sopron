@@ -278,13 +278,14 @@ function heroLayout() {
 const NAVS = '.hd__nav, .hd__tel, .hd__tools, #burger';
 const G = { ok: false, m: [0, 0], mT: [0, 0], run: false, vis: true, x: 0, y: 0, sc: 1, draw: null, init: null };
 /* Z.s: az ablak nagyítása, Z.p: a fotó útja a végső helyéig (0..1), Z.k: a nyitány lassú „leülése” */
-const Z = { s: 1, p: 0, k: 1 };
+const Z = { s: 1, p: 0, k: 1, z: 1, d: 0 };
 function heroRender() {
   const P = H.photo; if (!P) return;
   const A = H.A, p = Z.p, k = Z.k;
   let x = P.s0.x + (P.s1.x - P.s0.x) * p, y = P.s0.y + (P.s1.y - P.s0.y) * p;
-  const sc = (P.s0.scale + (1 - P.s0.scale) * p) * k;
-  if (k !== 1) { x = A.cx - (A.cx - x) * k; y = A.cy - (A.cy - y) * k; }
+  const kk = k * Z.z;
+  const sc = (P.s0.scale + (1 - P.s0.scale) * p) * kk;
+  if (kk !== 1) { x = A.cx - (A.cx - x) * kk; y = A.cy - (A.cy - y) * kk; }
   $('#heroImg').style.transform = `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${sc.toFixed(5)})`;
   G.x = x; G.y = y; G.sc = sc;
   if (G.ok && G.vis) G.draw();
@@ -334,22 +335,16 @@ function heroIntro() {
 }
 
 let heroST;
+/* Görgetésre az ív a helyén marad: a fotó benne lassan közelebb jön (egérrel a mélységtérkép szerint, az előtér jobban),
+   a belépő lassabban halad, mint a lap, és a következő szakasz papírja rácsúszik. Érintőn semmi nem követi az ujjat. */
 function heroScroll() {
   if (heroST) { heroST.kill(); heroST.animation && heroST.animation.kill(); }
+  if (!FINE) return;
   const tl = gsap.timeline({ defaults: { ease: 'none' }, onUpdate: heroRender });
-  tl.to('#heroL', { x: () => -Math.min(90, H.vw * .06), opacity: 0, duration: .26 }, 0)
-    .to('#heroR', { x: () => Math.min(90, H.vw * .06), opacity: 0, duration: .26 }, 0)
-    .to(['#hlGl', '#hlGr', '#hlCl', '#hlCr'], { opacity: 0, duration: .14 }, 0)
-    .fromTo(Z, { s: 1 }, { s: () => H.S, duration: .66, ease: 'power2.in' }, .06)
-    .fromTo(Z, { p: 0 }, { p: 1, duration: .66, ease: 'power3.out' }, .06)
-    .fromTo('#heroLines', { opacity: 1 }, { opacity: 0, duration: .22 }, .1)
-    .to({}, { duration: .12 });
-  if (FINE) { heroST = ScrollTrigger.create({ trigger: '.hero', start: 'top top', end: 'bottom bottom', scrub: SCRUB, animation: tl, invalidateOnRefresh: true }); return; }
-  // érintőn nem követi az ujjat: az első görgetésre egyszer kinyílik, a lap tetején visszacsukódik
-  tl.pause(0);
-  heroST = ScrollTrigger.create({ trigger: '.hero', start: 'top+=8 top', end: 'bottom bottom', animation: null,
-    onEnter: () => tl.timeScale(tl.duration() / 2.3).play(),
-    onLeaveBack: () => tl.timeScale(tl.duration() / 1.5).reverse() });
+  tl.to(Z, { z: 1.09, d: 1, duration: 1 }, 0)
+    .to('#heroStage', { yPercent: 34, duration: 1 }, 0)
+    .to(['#heroL', '#heroR'], { y: -50, opacity: 0, duration: .55 }, .05);
+  heroST = ScrollTrigger.create({ trigger: '.hero', start: 'top top', end: 'bottom top', scrub: SCRUB, animation: tl, invalidateOnRefresh: true });
 }
 
 /* ---------- Belépő térben: mélységtérkép szerint mozdul az egérre, görgetésre az előtér közelebb jön ----------
@@ -399,7 +394,7 @@ function setupGL() {
   G.draw = () => {
     const P = H.photo; if (!P) return;
     gl.uniform2f(U.uOff, G.x, G.y); gl.uniform2f(U.uSize, P.Wp * G.sc, P.Hp * G.sc);
-    gl.uniform2f(U.uM, G.m[0], G.m[1]); gl.uniform1f(U.uZ, Z.p * .045);
+    gl.uniform2f(U.uM, G.m[0], G.m[1]); gl.uniform1f(U.uZ, Z.d * .06);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
   const frame = () => {
@@ -412,7 +407,7 @@ function setupGL() {
   G.init = () => {
     G.init = null;
     const im = new Image(), dep = new Image();
-    im.src = 'img/hero-2800.webp?v=7'; dep.src = 'img/hero-depth.webp?v=7';
+    im.src = 'img/hero-2800.webp?v=8'; dep.src = 'img/hero-depth.webp?v=8';
     const idle = window.requestIdleCallback || (f => setTimeout(f, 1));
     const bm = x => window.createImageBitmap ? createImageBitmap(x).catch(() => x) : Promise.resolve(x);
     idle(() => {
@@ -870,26 +865,28 @@ function setupLenis() {
 function setupCursor() {
   if (!FINE || RM) return;
   const c = document.createElement('div'); c.className = 'cur'; c.setAttribute('aria-hidden', 'true');
-  c.innerHTML = `<span class="cur__a"><svg viewBox="0 0 30 38"><path d="${archHalves(1, 1, 28, 36).full}"/></svg></span><span class="cur__d"></span>`;
+  c.innerHTML = '<span class="cur__f"><svg viewBox="0 0 12 22"><path d="M6 .6C6.5 3.4 7 5.6 6.9 7.4C6.8 8.6 6.4 9.3 6 9.6C5.6 9.3 5.2 8.6 5.1 7.4C5 5.6 5.5 3.4 6 .6Z"/><circle cx="6" cy="14.6" r="4.4"/></svg></span>';
   document.body.append(c);
-  const A = $('.cur__a', c), D = $('.cur__d', c);
-  let tx = -99, ty = -99, ax = -99, ay = -99, dx = -99, dy = -99, raf = 0, seen = false;
+  const F = $('.cur__f', c);
+  let tx = -99, ty = -99, x = -99, y = -99, r = 0, raf = 0, seen = false;
   const loop = () => {
-    ax += (tx - ax) * .16; ay += (ty - ay) * .16; dx += (tx - dx) * .5; dy += (ty - dy) * .5;
-    A.style.transform = `translate3d(${ax.toFixed(1)}px,${ay.toFixed(1)}px,0)`;
-    D.style.transform = `translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0)`;
-    raf = Math.abs(tx - ax) + Math.abs(ty - ay) > .2 ? requestAnimationFrame(loop) : 0;
+    const vx = tx - x;
+    x += vx * .32; y += (ty - y) * .32;
+    // mint egy kis inga: a mozgással ellentétes irányba dől, aztán visszaáll
+    r += (Math.max(-22, Math.min(22, -vx * .9)) - r) * .18;
+    F.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) rotate(${r.toFixed(2)}deg)`;
+    raf = Math.abs(tx - x) + Math.abs(ty - y) + Math.abs(r) > .15 ? requestAnimationFrame(loop) : 0;
   };
   addEventListener('mousemove', e => {
     tx = e.clientX; ty = e.clientY;
-    if (!seen) { seen = true; ax = dx = tx; ay = dy = ty; c.classList.add('is-on'); HTML.classList.add('has-cur'); }
+    if (!seen) { seen = true; x = tx; y = ty; c.classList.add('is-on'); HTML.classList.add('has-cur'); }
     if (!raf) raf = requestAnimationFrame(loop);
   }, { passive: true });
   document.addEventListener('mouseover', e => {
     const t = e.target; if (!t.closest) return;
     const link = !!t.closest('a, button, li[data-peek]');
     c.classList.toggle('is-link', link);
-    c.classList.toggle('is-photo', !link && !!t.closest('.frame, .house__pic, .hero__stage'));
+    c.classList.toggle('is-photo', !link && !!t.closest('.frame, .house__pic, .hero__win'));
     c.classList.toggle('is-dark', !!t.closest('.ft'));
   });
   document.addEventListener('mouseleave', () => c.classList.remove('is-on'));

@@ -96,3 +96,10 @@ kopi kérése: a Café Nana vonala marad (krém papír, kupolakék tinta, barack
 - **Nyitókép:** görgetésre már nem nyílik ki teljes képernyőre. Az ív a helyén marad, a fotó benne lassan közelebb jön (egérrel a mélységtérkép szerint az előtér jobban), a belépő lassabban halad, és a következő szakasz papírja puha árnyékkal rácsúszik. Érintőn natív görgetés, semmi nem követi az ujjat.
 - **A régi fekete-fehér fotó** (sopronanno.hu vízjellel) nem került be: a vízjelet nem távolítjuk el. Tiszta, engedélyezett példányt a sopronanno.hu-tól vagy a tulajdonostól kérünk.
 - Mérés: gépen 0,1%, telefon-emuláció 4× lassítással 0,2% kieső képkocka. Asset-verzió ?v=8.
+
+## v3.2 (2026-11-05): A ház újragondolva
+kopi: a régi fotó nélkül az „Akkor” rész furcsa, legyen helyette valami kreatív.
+- A három állapot (A ház, Akkor, Ma) és a rajzlapra írt cégtábla kikerült. Most a villa vonalrajza kirajzolódik, majd a „kamera” tárlatvezetésként sorban ráközelít három részletre, mindegyiknél pont, vezetővonal és rövid felirat: hagymakupolás saroktorony; a régi cégtábla helye (Sass Lajos Rákóczi vendéglője); balluszteres terasz. Aztán visszahúzódik, és a mai fotó a torony ívéből nyílik ki.
+- A szöveg egy blokk: család tulajdona, helyi védett, egy régi fényképen még vendéglő volt; ma kávézó és cukrászda, a régi lőveri kávéházak voltak a minta.
+- Telefonon ugyanez időre futó filmként (kb. 12 s), semmi nem követi az ujjat.
+- Mérés: az új konténeren a v3.1 és a v3.2 ugyanannyit ad (gépen 3,3%, ez a gép lassabb, mint az előző), tehát a változás nem rontott; telefon-emuláció 4× lassítással 0,1%. Asset-verzió ?v=9.

@@ -54,10 +54,10 @@ const DE = {
   'free.aria':'Ohne Gluten, Zucker, Milch und Ei','free.w1':'Gluten,','free.w2':'Zucker,','free.w3':'Milch,','free.w4':'Ei.',
   'free.p1':'Nichts davon kommt in unsere Kuchen. Die Küche ist komplett glutenfrei, auch der Toast und die Bagels zum Frühstück.',
   'free.p2':'Zum Kaffee gibt es Kokos-, Mandel- oder Haferdrink. Wenn Sie auf etwas sehr empfindlich reagieren, fragen Sie an der Theke, wir sagen Ihnen, was in welchem Kuchen steckt.',
-  'house.h':'Das Haus','house.p':'Es gehört seit langem unserer Familie und steht unter örtlichem Denkmalschutz.',
-  'house.h1':'Damals','house.p1':'Auf einem alten Foto war hier noch ein Gasthaus. An der Fassade stand: „Sass Lajos Rákóczi vendéglője“, Gasthaus Rákóczi von Lajos Sass.',
-  'house.h2':'Heute','house.p2':'Café und Konditorei. Beim Einrichten waren die alten Kaffeehäuser der Löwern unser Vorbild.',
-  'house.credit':'Zeichnung nach einem alten Foto von sopronanno.hu','house.s0':'Das Haus','house.s1':'Damals','house.s2':'Heute',
+  'house.h':'Das Haus','house.p':'Es gehört seit langem unserer Familie und steht unter örtlichem Denkmalschutz. Auf einem alten Foto war hier noch ein Gasthaus.',
+  'house.p2':'Heute Café und Konditorei. Beim Einrichten waren die alten Kaffeehäuser der Löwern unser Vorbild.',
+  'house.n1':'Eckturm mit Zwiebelkuppel','house.n2':'Hier hing das alte Schild: Sass Lajos Rákóczi vendéglője','house.n3':'Terrasse mit Balustrade',
+  'house.credit':'Zeichnung nach einem alten Foto von sopronanno.hu',
   'salon.h':'Der Salon','salon.p':'Drinnen Kamin, Kronleuchter, Fischgrätparkett und weiße Stühle im Louis-seize-Stil. Bei schönem Wetter kann man auch draußen auf der Terrasse sitzen.',
   'shop.h':'Aus der Backstube','shop.p':'Die Backstube liegt unter dem Café, dort backen wir jeden Morgen. Was in die Vitrine kommt, wechselt, die Bilder sind nur Beispiele.',
   'c1':'Kuchen des Tages','c1d':'Es gab schon Zwetschgenkuchen mit Zimt, Kirschkuchen und Mangotorte.',
@@ -407,7 +407,7 @@ function setupGL() {
   G.init = () => {
     G.init = null;
     const im = new Image(), dep = new Image();
-    im.src = 'img/hero-2800.webp?v=8'; dep.src = 'img/hero-depth.webp?v=8';
+    im.src = 'img/hero-2800.webp?v=9'; dep.src = 'img/hero-depth.webp?v=9';
     const idle = window.requestIdleCallback || (f => setTimeout(f, 1));
     const bm = x => window.createImageBitmap ? createImageBitmap(x).catch(() => x) : Promise.resolve(x);
     idle(() => {
@@ -649,18 +649,13 @@ function setupHouse() {
   setSW(); addEventListener('resize', setSW);
   houseFrameGeom();
   const lines = $$('path,circle', g);
-  const states = $$('.house__state'), steps = $$('.house__step');
   const fp = $$('#houseFrame path');
-  const signR = $('#signClip rect');
-  let cur = 0;
-  const show = i => {
-    if (i === cur) return; cur = i;
-    states.forEach((s, k) => s.classList.toggle('is-on', k === i));
-    steps.forEach((s, k) => s.classList.toggle('is-on', k <= i));
-    const sp = $('.split', states[i]);
-    if (sp && !sp.classList.contains('is-in')) revealSplit(sp);
-  };
-  if (RM) { gsap.set([...lines, ...fp], { strokeDashoffset: 0 }); gsap.set('#houseFill', { scaleX: 1 }); signR.setAttribute('width', 330); steps.forEach(s => s.classList.add('is-on')); return; }
+  const notes = $$('#houseNotes .nt'), labels = $$('#houseLabels .note');
+  const dw = $('#houseDraw'), neu = $('#houseNew'), lab = $('#houseLabels');
+  if (RM) { gsap.set([...lines, ...fp, ...$$('path', $('#houseNotes'))], { strokeDashoffset: 0 }); return; }
+  gsap.set($$('path', $('#houseNotes')), { strokeDashoffset: OFF });
+  gsap.set($$('circle', $('#houseNotes')), { scale: 0, transformOrigin: '50% 50%', transformBox: 'fill-box' });
+  gsap.set(labels, { opacity: 0, y: 10 });
 
   // a keret már a beérkezés közben körbeér
   drive(gsap.fromTo(fp, { strokeDashoffset: OFF }, { strokeDashoffset: 0, ease: FLOW }), { trigger: '.house', start: 'top 88%', end: 'top 5%', touch: 'top 70%' }, $('#houseFrame'), 1.8);
@@ -678,8 +673,26 @@ function setupHouse() {
     const rev = Math.abs(a.y - b.y) > 8 ? a.y < b.y : a.x > b.x;
     draw.fromTo(p, { strokeDashoffset: rev ? -OFF : OFF }, { strokeDashoffset: 0, duration: Math.max(.06, L / v), ease: FLOW }, Math.max(0, (Yb - bot) / R) * .8);
   });
+
+  // megjegyzés: a pont kipattan, a vezetővonal kifut a címkéig, a címke felúszik
+  const note = (tl, i, at, d) => {
+    const n = notes[i];
+    tl.to($('.nt__dot', n), { scale: 1, duration: d * .25, ease: 'back.out(2.4)' }, at)
+      .fromTo($('.nt__ring', n), { scale: .3, opacity: .9 }, { scale: 1.6, opacity: 0, duration: d * .7, ease: 'power2.out' }, at)
+      .to($('path', n), { strokeDashoffset: 0, duration: d * .6, ease: FLOW }, at + d * .12)
+      .to(labels[i], { opacity: 1, y: 0, duration: d * .5, ease: 'power2.out' }, at + d * .55);
+  };
+
+  // Kamera a rajz fölött: sorban ráközelít a három részletre, mint egy tárlatvezetés, aztán visszahúzódik
+  const zoom = $('#houseZoom'), Z3 = 1.45;
+  const FOC = [[600, 290], [880, 445], [215, 560]];
+  const zx = i => () => { const W = pic.offsetWidth; return Math.min(0, Math.max(W - W * Z3, W / 2 - (FOC[i][0] - 120) / 890 * W * Z3)); };
+  const zy = i => () => { const Hh = pic.offsetHeight; return Math.min(0, Math.max(Hh - Hh * Z3, Hh / 2 - (FOC[i][1] - 190) / 580 * Hh * Z3)); };
+  gsap.set(zoom, { transformOrigin: '0 0' });
+  const cam = (tl, i, at, d, ez) => tl.to(zoom, { scale: Z3, x: zx(i), y: zy(i), duration: d, ease: ez || 'power2.inOut' }, at);
+  const camOut = (tl, at, d, ez) => tl.to(zoom, { scale: 1, x: 0, y: 0, duration: d, ease: ez || 'power2.inOut' }, at);
+
   // A mai fotó a torony ívéből nyílik ki: először csak a rajzolt torony helyén látszik, aztán az ív szétnyílik a kép fölött.
-  const neu = $('#houseNew'), dw = $('#houseDraw');
   const R0 = { k: 0 };
   const ease = gsap.parseEase('power2.in');
   const archClip = () => {
@@ -696,39 +709,36 @@ function setupHouse() {
   addEventListener('resize', archClip);
 
   if (FINE) {
-    // már a szakasz beúszásakor elindul, megálláskor kb. félig kész, utána a görgetéssel nő tovább
     const pinLen = () => $('.house').offsetHeight - innerHeight;
-    houseDrawST = ScrollTrigger.create(Object.assign({ trigger: '.house', start: 'top 80%', end: () => '+=' + (innerHeight * .8 + pinLen() * .4), scrub: SCRUB, animation: draw, invalidateOnRefresh: true }, live(dw)));
-    // A ház: a rajz nő. Akkor: rajzlap-tónus, és a régi cégtábla felirata kiíródik a homlokzatra. Ma: a mai fotó a torony ívéből.
+    houseDrawST = ScrollTrigger.create(Object.assign({ trigger: '.house', start: 'top 80%', end: () => '+=' + (innerHeight * .8 + pinLen() * .3), scrub: SCRUB, animation: draw, invalidateOnRefresh: true }, live(dw)));
     const tl = gsap.timeline({ defaults: { ease: 'none' } });
-    tl.fromTo('#houseFill', { scaleX: 0 }, { scaleX: .5, duration: .5 }, 0)
-      .to('#houseFill', { scaleX: 1, duration: .18 }, .5)
-      .to('#houseSheet', { opacity: 1, duration: .1 }, .44)
-      .fromTo(signR, { attr: { width: 0 } }, { attr: { width: 330 }, duration: .1, ease: 'power1.inOut' }, .47)
-      .to('.house__credit', { opacity: 1, duration: .06 }, .5)
-      .fromTo(R0, { k: 0 }, { k: 1, duration: .22, onUpdate: archClip }, .6)
-      .to(dw, { opacity: 0, duration: .1 }, .72)
-      .to('.house__credit', { opacity: 0, duration: .06 }, .72)
-      .to({}, { duration: .14 }, .86);
-    houseST = ScrollTrigger.create({
-      trigger: '.house', start: 'top top', end: 'bottom bottom', scrub: SCRUB, animation: tl,
-      onUpdate: self => { const p = self.progress; show(p < .5 ? 0 : p < .66 ? 1 : 2); }
-    });
+    cam(tl, 0, .22, .1); note(tl, 0, .28, .1);
+    cam(tl, 1, .36, .1); note(tl, 1, .42, .1);
+    cam(tl, 2, .5, .1); note(tl, 2, .56, .1);
+    camOut(tl, .64, .08);
+    tl.to('.house__credit', { opacity: 1, duration: .06 }, .3)
+      .to([lab, '#houseNotes'], { opacity: 0, duration: .05 }, .74)
+      .fromTo(R0, { k: 0 }, { k: 1, duration: .16, onUpdate: archClip }, .76)
+      .to(dw, { opacity: 0, duration: .08 }, .84)
+      .to('.house__credit', { opacity: 0, duration: .06 }, .84)
+      .to({}, { duration: .06 }, .94);
+    houseST = ScrollTrigger.create({ trigger: '.house', start: 'top top', end: 'bottom bottom', scrub: SCRUB, animation: tl, invalidateOnRefresh: true,
+      onToggle: st => zoom.classList.toggle('is-live', st.isActive) });
   } else {
-    // érintőn egy rövid film: rajz, régi cégtábla, majd a mai fotó
+    // érintőn egy rövid film: a rajz, a három megjegyzés, majd a mai fotó
     draw.pause(0);
     const T = draw.duration();
     const film = gsap.timeline({ paused: true });
-    film.call(() => draw.timeScale(T / 2.6).play(0), null, 0)
-      .fromTo('#houseFill', { scaleX: 0 }, { scaleX: .5, duration: 2.6, ease: 'none' }, 0)
-      .call(() => show(1), null, 2.7)
-      .to('#houseSheet', { opacity: 1, duration: .6 }, 2.7)
-      .fromTo(signR, { attr: { width: 0 } }, { attr: { width: 330 }, duration: 1, ease: 'power1.inOut' }, 2.9)
-      .call(() => show(2), null, 5.2)
-      .to('#houseFill', { scaleX: 1, duration: 1.4, ease: 'power2.inOut' }, 5.2)
-      .fromTo(R0, { k: 0 }, { k: 1, duration: 1.9, ease: 'power1.inOut', onUpdate: archClip }, 5.2)
-      .to(dw, { opacity: 0, duration: .8 }, 6.1);
-    ScrollTrigger.create({ trigger: '#housePic', start: 'top 62%', once: true, onEnter: () => film.play() });
+    film.call(() => draw.timeScale(T / 2.6).play(0), null, 0);
+    cam(film, 0, 2.5, 1.1); note(film, 0, 3.2, 1.2);
+    cam(film, 1, 4.6, 1.1); note(film, 1, 5.3, 1.2);
+    cam(film, 2, 6.7, 1.1); note(film, 2, 7.4, 1.2);
+    camOut(film, 8.9, 1.1);
+    film.to([lab, '#houseNotes'], { opacity: 0, duration: .5 }, 10.6)
+      .fromTo(R0, { k: 0 }, { k: 1, duration: 1.9, ease: 'power1.inOut', onUpdate: archClip }, 10.6)
+      .to(dw, { opacity: 0, duration: .8 }, 11.5)
+      .add(() => zoom.classList.remove('is-live'));
+    ScrollTrigger.create({ trigger: '#housePic', start: 'top 62%', once: true, onEnter: () => { zoom.classList.add('is-live'); film.play(); } });
   }
 }
 

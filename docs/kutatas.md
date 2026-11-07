@@ -103,3 +103,13 @@ kopi: a régi fotó nélkül az „Akkor” rész furcsa, legyen helyette valami
 - A szöveg egy blokk: család tulajdona, helyi védett, egy régi fényképen még vendéglő volt; ma kávézó és cukrászda, a régi lőveri kávéházak voltak a minta.
 - Telefonon ugyanez időre futó filmként (kb. 12 s), semmi nem követi az ujjat.
 - Mérés: az új konténeren a v3.1 és a v3.2 ugyanannyit ad (gépen 3,3%, ez a gép lassabb, mint az előző), tehát a változás nem rontott; telefon-emuláció 4× lassítással 0,1%. Asset-verzió ?v=9.
+
+## v4 (2026-11-07), kopi hét kérése
+- Nyitókép: a fehér helyett sötét kupolakék fal, az ív és a nyitó animáció ugyanaz (világos logó és menü, amíg a fejléc átlátszó).
+- Fejléc bal oldalán a telefonszám helyett élő nyitvatartás (Most nyitva, 18:00-ig / Holnap 7:30-kor nyitunk), pulzáló barack ponttal; kattintásra az Elérhetőséghez visz.
+- Főcím: „Gluténmentes cukrászda Sopronban” (a „mentes cukrászda” nem magyar kifejezés). Title, leírás is.
+- Szakaszok: váltakozó papírszín, és minden szakasz kupolaívvel, barack hajszálvonallal csúszik az előzőre; egérrel a görgetés lapítja ki, érintőn egyszer fut le, nyugalomban kis csúcs marad.
+- A ház: a vonalrajz és a jegyzetek kikerültek. A mai fotó három ívablakban emelkedik fel (a középsőben a kupola), aztán görgetésre egy képpé nyílnak.
+- Szalon: a két kép egy közös függőleges vonalból (fent a csúcsdísszel) nyílik szét, mint egy szárnyas ajtó; alatta Bent / Kint.
+- Műhely: az oldalra görgetés helyett kitűzött ívablak, amiben a sütemények alulról egymás után emelkednek fel; mellette számozott lista mutatja, melyik látszik. Érintőn sorban, ívtetős képekkel. A tortarendelés külön, alatta.
+- Vélemények: Newsreader dőlt (a Gilda kis méretben nehézkes volt).

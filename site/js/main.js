@@ -1,4 +1,6 @@
-/* Café Nana v3: v2.4 + puha görgetés egérrel (Lenis), kupola-kurzor, mélységtérképes nyitókép, soronként felúszó címek,
+/* Café Nana v4: sötét kupolakék nyitókép, élő nyitvatartás a fejlécben, kupolaívvel egymásra csúszó szakaszok,
+   három ívablakból egy képpé nyíló ház, szárnyas ajtóként nyíló szalon, ívablakos műhely.
+   v3: v2.4 + puha görgetés egérrel (Lenis), kupola-kurzor, mélységtérképes nyitókép, soronként felúszó címek,
    ív alakú gombkitöltés, a ház fotója a torony ívéből nyílik, papírként felemelkedő étlap, Google-vélemények, függöny-lábléc.
    Érintőképernyőn semmi nem követi az ujjat: ott minden egyszer, a saját tempójában fut le. */
 (() => {
@@ -54,11 +56,9 @@ const DE = {
   'free.aria':'Ohne Gluten, Zucker, Milch und Ei','free.w1':'Gluten,','free.w2':'Zucker,','free.w3':'Milch,','free.w4':'Ei.',
   'free.p1':'Nichts davon kommt in unsere Kuchen. Die Küche ist komplett glutenfrei, auch der Toast und die Bagels zum Frühstück.',
   'free.p2':'Zum Kaffee gibt es Kokos-, Mandel- oder Haferdrink. Wenn Sie auf etwas sehr empfindlich reagieren, fragen Sie an der Theke, wir sagen Ihnen, was in welchem Kuchen steckt.',
-  'house.h':'Das Haus','house.p':'Es gehört seit langem unserer Familie und steht unter örtlichem Denkmalschutz. Auf einem alten Foto war hier noch ein Gasthaus.',
+  'house.h':'Das Haus','house.p':'Es gehört seit langem unserer Familie und steht unter örtlichem Denkmalschutz. Auf einem alten Foto war hier noch ein Gasthaus, Sass Lajos Rákóczi vendéglője.',
   'house.p2':'Heute Café und Konditorei. Beim Einrichten waren die alten Kaffeehäuser der Löwern unser Vorbild.',
-  'house.n1':'Eckturm mit Zwiebelkuppel','house.n2':'Hier hing das alte Schild: Sass Lajos Rákóczi vendéglője','house.n3':'Terrasse mit Balustrade',
-  'house.credit':'Zeichnung nach einem alten Foto von sopronanno.hu',
-  'salon.h':'Der Salon','salon.p':'Drinnen Kamin, Kronleuchter, Fischgrätparkett und weiße Stühle im Louis-seize-Stil. Bei schönem Wetter kann man auch draußen auf der Terrasse sitzen.',
+  'salon.h':'Der Salon','salon.p':'Drinnen Kamin, Kronleuchter, Fischgrätparkett und weiße Stühle im Louis-seize-Stil. Bei schönem Wetter kann man auch draußen auf der Terrasse sitzen.','salon.a':'Drinnen','salon.b':'Draußen',
   'shop.h':'Aus der Backstube','shop.p':'Die Backstube liegt unter dem Café, dort backen wir jeden Morgen. Was in die Vitrine kommt, wechselt, die Bilder sind nur Beispiele.',
   'c1':'Kuchen des Tages','c1d':'Es gab schon Zwetschgenkuchen mit Zimt, Kirschkuchen und Mangotorte.',
   'c2':'Krémes','c2d':'Ohne Ei und Milch, was bei einer Cremeschnitte keine Kleinigkeit ist.',
@@ -113,6 +113,7 @@ function applyLang(l) {
   hours();
   buildStrikes();
   wrapBtns();
+  buildShopList();
   if (typeof setupLead === 'function' && leadReady) setupLead();
   try { localStorage.setItem('nana-lang', l); } catch (e) {}
 }
@@ -160,7 +161,19 @@ function hours() {
     short = lang === 'de' ? `<b>Jetzt geschlossen</b>, wieder ${n === 1 ? 'morgen' : NEXT_DE[nd]} ab ${o} Uhr` : `<b>Most zárva</b>, ${n === 1 ? 'holnap' : NEXT_HU[nd]} ${o}-kor nyitunk`;
     long = short + '.';
   }
-  const hn = $('#heroNow'); if (hn) hn.innerHTML = short;
+  const hd = $('#hdNow');
+  if (hd) {
+    const up = x => x.charAt(0).toUpperCase() + x.slice(1);
+    let txt, open = false;
+    if (t && h >= t[0] && h < t[1]) { open = true; txt = lang === 'de' ? `Jetzt geöffnet, bis ${fmt(t[1])} Uhr` : `Most nyitva, ${fmt(t[1])}-ig`; }
+    else if (t && h < t[0]) txt = lang === 'de' ? `Heute ab ${fmt(t[0])} Uhr geöffnet` : `Ma ${fmt(t[0])}-kor nyitunk`;
+    else {
+      let n = 1; while (!HOURS[(day + n) % 7]) n++;
+      const nd = (day + n) % 7, o = fmt(HOURS[nd][0]);
+      txt = lang === 'de' ? `${n === 1 ? 'Morgen' : up(NEXT_DE[nd])} ab ${o} Uhr geöffnet` : `${n === 1 ? 'Holnap' : up(NEXT_HU[nd])} ${o}-kor nyitunk`;
+    }
+    hd.classList.toggle('is-open', open); $('span', hd).textContent = txt;
+  }
   const hw = $('#hoursNow'); if (hw) hw.innerHTML = long;
 }
 
@@ -275,7 +288,7 @@ function heroLayout() {
   heroRender();
 }
 
-const NAVS = '.hd__nav, .hd__tel, .hd__tools, #burger';
+const NAVS = '.hd__nav, .hd__now, .hd__tools, #burger';
 const G = { ok: false, m: [0, 0], mT: [0, 0], run: false, vis: true, x: 0, y: 0, sc: 1, draw: null, init: null };
 /* Z.s: az ablak nagyítása, Z.p: a fotó útja a végső helyéig (0..1), Z.k: a nyitány lassú „leülése” */
 const Z = { s: 1, p: 0, k: 1, z: 1, d: 0 };
@@ -483,7 +496,7 @@ function setupFrames(container) {
     if (!cur) { cur = document.createElement('div'); cur.className = 'frame__cur'; inr.append(cur); }
     const paths = $$('path', svg);
     if (RM) { gsap.set(paths, { strokeDashoffset: 0 }); cur.remove(); return; }
-    const inShop = container && f.closest('#shopTrack') && !isMob();
+    const inShop = false;
     const early = inShop && f.getBoundingClientRect().left < innerWidth * .9;
     // a keret vonala a görgetéssel együtt nő körbe a kép körül
     const draw = gsap.fromTo(paths, { strokeDashoffset: OFF }, { strokeDashoffset: 0, ease: FLOW });
@@ -560,7 +573,7 @@ function setupCarts(container) {
     if (crown) { tl.to(crown, { strokeDashoffset: 0, duration: .45 }, 0); t = .3; }
     tl.to(outer, { strokeDashoffset: 0, duration: 1 }, t)
       .to(inner, { strokeDashoffset: 0, duration: 1 }, t + .12);
-    const inShop = container && el.closest('#shopTrack') && !isMob();
+    const inShop = false;
     const big = el.classList.contains('menu__card');
     drive(tl, Object.assign({ trigger: el },
       inShop ? { containerAnimation: container, start: 'left 100%', end: shopEnd(el, 42) } : big ? { start: 'top 92%', end: 'top 12%' } : { start: 'top 94%', end: 'center 48%' }), s, big ? 2.4 : 2);
@@ -584,162 +597,67 @@ function setupOrns() {
   });
 }
 
-/* ---------- A ház ---------- */
-const VILLA = `<path pathLength="1" d="M140 745H988"/>
-<path pathLength="1" d="M352 700H600M600 698H982"/>
-<path pathLength="1" d="M770 541H984M600 550H984M600 561H984"/>
-<path pathLength="1" d="M600 550V745M984 541V745"/>
-<path pathLength="1" d="M634 738V593H662V738"/>
-<path pathLength="1" d="M697 700V597H728V700ZM712 597V700M697 630H728M691 706H734"/>
-<path pathLength="1" d="M813 703V602H843V703ZM828 602V703M813 635H843M807 709H849"/>
-<path pathLength="1" d="M899 703V606H929V703ZM914 606V703M899 638H929M893 709H935"/>
-<path pathLength="1" d="M207 700V615H222V700"/>
-<path pathLength="1" d="M256 680V612H276V680ZM266 612V680M256 630H276"/>
-<path pathLength="1" d="M289 676V604H303V676Z"/>
-<path pathLength="1" d="M325 670V588H345V670ZM335 588V670M325 607H345"/>
-<path pathLength="1" d="M150 580V745M206 562V745"/>
-<path pathLength="1" d="M482 368C510 377 540 388 562 394"/>
-<path pathLength="1" d="M566 397L704 455L696 470L760 534"/>
-<path pathLength="1" d="M592 546H770"/>
-<path pathLength="1" d="M300 432L210 478"/>
-<path pathLength="1" d="M150 566L300 548M300 548L345 533"/>
-<path pathLength="1" d="M152 580C153 540 156 500 162 474C166 460 172 450 182 447C191 448 196 456 199 468C203 490 205 530 206 562"/>
-<path pathLength="1" d="M168 690V612H186V690ZM177 612V690"/>
-<path pathLength="1" d="M302 530C303 500 304 470 307 448C309 428 316 410 324 400C329 393 333 390 338 391C345 393 349 399 352 410"/>
-<path pathLength="1" d="M324 522V478A8 8 0 0 1 340 478V522Z"/>
-<path pathLength="1" d="M488 528C490 500 492 470 495 445C497 428 503 416 510 406C518 394 525 384 538 382C552 381 560 389 566 399C574 413 581 432 585 452C588 476 590 500 592 528"/>
-<path pathLength="1" d="M502 512C503 486 505 462 508 446C511 432 516 421 523 412C529 405 533 400 539 399C546 399 551 404 556 412C563 424 568 440 571 458C574 478 576 496 577 512" class="vl-fine"/>
-<circle pathLength="1" cx="496" cy="510" r="5"/><circle pathLength="1" cx="589" cy="515" r="5"/>
-<path pathLength="1" d="M520 665V592H562V665ZM534 592V665M548 592V665M520 615H562M515 670H567"/>
-<path pathLength="1" d="M527 515V471A13 13 0 0 1 553 471V515ZM540 458V515M527 488H553"/>
-<path pathLength="1" d="M368 514H466L486 530M368 514L345 530H486"/>
-<path pathLength="1" d="M352 538Q415 548 484 540"/>
-<path pathLength="1" d="M360 545V700M482 542V700"/>
-<path pathLength="1" d="M381 664V586H411V664ZM396 586V664M381 609H411M376 668H416"/>
-<path pathLength="1" d="M429 662V586H446V662ZM429 609H446M425 666H450"/>
-<path pathLength="1" d="M352 427Q415 421 478 427M350 434Q415 428 480 434M356 440Q415 435 474 440"/>
-<path pathLength="1" d="M363 440V514M468 440V514"/>
-<path pathLength="1" d="M385 510V449H415V510ZM400 449V510M385 470H415"/>
-<path pathLength="1" d="M436 510V449H454V510ZM436 470H454"/>
-<path pathLength="1" d="M471 372V349H483V372"/>
-<path pathLength="1" d="M412 306C396 314 371 326 362 349C353 371 359 397 380 412M418 306C434 314 459 326 468 349C477 371 471 397 450 412"/>
-<path pathLength="1" d="M415 309C405 330 398 360 401 412M415 309C425 330 432 360 429 412" class="vl-fine"/>
-<circle pathLength="1" cx="362" cy="348" r="3"/><circle pathLength="1" cx="468" cy="347" r="3"/>
-<path pathLength="1" d="M378 413H452"/>
-<path pathLength="1" d="M415 222V206M415 208L429 211L415 215"/>
-<path pathLength="1" d="M413.5 232L413 262C412.5 280 411 292 407 305M416.5 232L417 262C417.5 280 419 292 423 305"/>
-<path pathLength="1" d="M398 309H432"/>
-<path pathLength="1" d="M150 712H352M150 718H352"/>
-<path pathLength="1" d="M160 700V745M172 700V745M184 700V745M196 700V745M220 700V745M232 700V745M244 700V745M256 700V745M268 700V745M280 700V745M292 700V745M304 700V745M316 700V745M328 700V745M340 700V745" class="vl-fine"/>`;
-let houseST, houseDrawST;
-/* rajzlap-keret a kép körül, behúzott sarkokkal (mint a kartus), két ág fentről */
-function houseFrameGeom() {
-  const pic = $('#housePic'), sv = $('#houseFrame'); if (!sv) return;
-  const w = pic.offsetWidth, h = pic.offsetHeight, mob = isMob(), d = mob ? 10 : 18, r = mob ? 10 : 14, e = .5;
-  const W = w + d * 2, Hh = h + d * 2, c = W / 2;
-  sv.setAttribute('width', W); sv.setAttribute('height', Hh); sv.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
-  const [a, b] = $$('path', sv);
-  a.setAttribute('d', `M${c} ${e}H${W - e - r}A${r} ${r} 0 0 0 ${W - e} ${e + r}V${Hh - e - r}A${r} ${r} 0 0 0 ${W - e - r} ${Hh - e}H${c}`);
-  b.setAttribute('d', `M${c} ${e}H${e + r}A${r} ${r} 0 0 1 ${e} ${e + r}V${Hh - e - r}A${r} ${r} 0 0 1 ${e + r} ${Hh - e}H${c}`);
-}
+/* ---------- A ház: a mai fotó három ívablakban kezdődik (a középsőben a kupola), görgetésre egy képpé nyílnak ----------
+   Az ívek a talajtól emelkednek fel, a vékony körvonal követi őket; aztán szélesednek, és a csúcsuk kifut a képből. */
+let houseResize = null;
 function setupHouse() {
-  const g = $('#villaLines'); g.innerHTML = VILLA;
-  const pic = $('#housePic');
-  const setSW = () => pic.style.setProperty('--vsw', (1.25 * 890 / Math.max(200, pic.offsetWidth)).toFixed(3));
-  setSW(); addEventListener('resize', setSW);
-  houseFrameGeom();
-  const lines = $$('path,circle', g);
-  const fp = $$('#houseFrame path');
-  const notes = $$('#houseNotes .nt'), labels = $$('#houseLabels .note');
-  const dw = $('#houseDraw'), neu = $('#houseNew'), lab = $('#houseLabels');
-  if (RM) { gsap.set([...lines, ...fp, ...$$('path', $('#houseNotes'))], { strokeDashoffset: 0 }); return; }
-  gsap.set($$('path', $('#houseNotes')), { strokeDashoffset: OFF });
-  gsap.set($$('circle', $('#houseNotes')), { scale: 0, transformOrigin: '50% 50%', transformBox: 'fill-box' });
-  gsap.set(labels, { opacity: 0, y: 10 });
-
-  // a keret már a beérkezés közben körbeér
-  drive(gsap.fromTo(fp, { strokeDashoffset: OFF }, { strokeDashoffset: 0, ease: FLOW }), { trigger: '.house', start: 'top 88%', end: 'top 5%', touch: 'top 70%' }, $('#houseFrame'), 1.8);
-
-  // A villa a talajtól felfelé nő, mint egy emelkedő szint: minden vonal akkor indul, amikor
-  // a szint eléri az alját, alulról felfelé (vízszintesnél balról jobbra) rajzolódik, és
-  // a hosszával arányos ideig, így a tinta mindenhol egyforma tempóban folyik.
-  const Yb = 750, Yt = 200, R = Yb - Yt, v = R * 1.45;
-  const draw = gsap.timeline();
-  lines.forEach(p => {
-    const L = p.getTotalLength();
-    const a = p.getPointAtLength(0), b = p.getPointAtLength(L);
-    let bot = -1e9;
-    for (let i = 0; i <= 12; i++) bot = Math.max(bot, p.getPointAtLength(L * i / 12).y);
-    const rev = Math.abs(a.y - b.y) > 8 ? a.y < b.y : a.x > b.x;
-    draw.fromTo(p, { strokeDashoffset: rev ? -OFF : OFF }, { strokeDashoffset: 0, duration: Math.max(.06, L / v), ease: FLOW }, Math.max(0, (Yb - bot) / R) * .8);
-  });
-
-  // megjegyzés: a pont kipattan, a vezetővonal kifut a címkéig, a címke felúszik
-  const note = (tl, i, at, d) => {
-    const n = notes[i];
-    tl.to($('.nt__dot', n), { scale: 1, duration: d * .25, ease: 'back.out(2.4)' }, at)
-      .fromTo($('.nt__ring', n), { scale: .3, opacity: .9 }, { scale: 1.6, opacity: 0, duration: d * .7, ease: 'power2.out' }, at)
-      .to($('path', n), { strokeDashoffset: 0, duration: d * .6, ease: FLOW }, at + d * .12)
-      .to(labels[i], { opacity: 1, y: 0, duration: d * .5, ease: 'power2.out' }, at + d * .55);
+  const pic = $('#housePic'), win = $('#houseWin'), img = $('#houseImg'), svg = $('#houseLines'), ln = $$('path', svg);
+  if (RM) return;
+  // ív középpontja, szélessége, csúcsa (a kép arányában); a középső a kupolára esik, és magasabb
+  const C0 = [.29, .59, .885], W0 = [.18, .2, .17], T0 = [.34, .03, .4];
+  const S = { q: 0, p: 0 };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const eP = gsap.parseEase('power2.inOut');
+  let W = 1, Hh = 1;
+  const measure = () => { W = pic.offsetWidth; Hh = pic.offsetHeight; svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`); };
+  const render = () => {
+    const q = S.q, p = eP(S.p);
+    if (p >= .999) { win.style.clipPath = 'none'; svg.style.opacity = 0; img.style.transform = 'none'; return; }
+    const A = [0, 1, 2].map(i => {
+      const cx = lerp(C0[i], (i * 2 + 1) / 6, p) * W, w = lerp(W0[i] * W, W / 3 + 4, p);
+      const t0 = lerp(Hh, T0[i] * Hh, q), top = lerp(t0, -Hh * .8, p);
+      return archHalves(cx - w / 2, top, w, Hh + 2 - top);
+    });
+    win.style.clipPath = `path('${A.map(a => a.full).join(' ')}')`;
+    A.forEach((a, i) => ln[i].setAttribute('d', a.full.replace(/Z$/, '')));
+    svg.style.opacity = Math.max(0, 1 - p * 2.2).toFixed(3);
+    img.style.transform = `scale(${(1.14 - .14 * p).toFixed(4)})`;
   };
-
-  // Kamera a rajz fölött: sorban ráközelít a három részletre, mint egy tárlatvezetés, aztán visszahúzódik
-  const zoom = $('#houseZoom'), Z3 = 1.45;
-  const FOC = [[600, 290], [880, 445], [215, 560]];
-  const zx = i => () => { const W = pic.offsetWidth; return Math.min(0, Math.max(W - W * Z3, W / 2 - (FOC[i][0] - 120) / 890 * W * Z3)); };
-  const zy = i => () => { const Hh = pic.offsetHeight; return Math.min(0, Math.max(Hh - Hh * Z3, Hh / 2 - (FOC[i][1] - 190) / 580 * Hh * Z3)); };
-  gsap.set(zoom, { transformOrigin: '0 0' });
-  const cam = (tl, i, at, d, ez) => tl.to(zoom, { scale: Z3, x: zx(i), y: zy(i), duration: d, ease: ez || 'power2.inOut' }, at);
-  const camOut = (tl, at, d, ez) => tl.to(zoom, { scale: 1, x: 0, y: 0, duration: d, ease: ez || 'power2.inOut' }, at);
-
-  // A mai fotó a torony ívéből nyílik ki: először csak a rajzolt torony helyén látszik, aztán az ív szétnyílik a kép fölött.
-  const R0 = { k: 0 };
-  const ease = gsap.parseEase('power2.in');
-  const archClip = () => {
-    const k = R0.k;
-    if (k <= 0) { neu.style.opacity = 0; neu.style.clipPath = ''; return; }
-    neu.style.opacity = 1;
-    if (k >= 1) { neu.style.clipPath = 'none'; return; }
-    const W = pic.offsetWidth, Hh = pic.offsetHeight, e = ease(k);
-    // a torony közepe a rajzon: x 415, csúcsa y 206 (viewBox 120 190 890 580)
-    const cx = (415 - 120) / 890 * W, top0 = (206 - 190) / 580 * Hh;
-    const w = W * .12 + (W * 3.4 - W * .12) * e, top = top0 + (-Hh * 1.7 - top0) * e;
-    neu.style.clipPath = `path('${archHalves(cx - w / 2, top, w, Hh + 4 - top).full}')`;
-  };
-  addEventListener('resize', archClip);
-
+  gsap.set(ln, { strokeDashoffset: 0 });
+  measure(); render();
+  houseResize = () => { measure(); render(); };
   if (FINE) {
-    const pinLen = () => $('.house').offsetHeight - innerHeight;
-    houseDrawST = ScrollTrigger.create(Object.assign({ trigger: '.house', start: 'top 80%', end: () => '+=' + (innerHeight * .8 + pinLen() * .3), scrub: SCRUB, animation: draw, invalidateOnRefresh: true }, live(dw)));
+    // beérkezés közben emelkednek fel az ívek, a kitűzött szakaszban nyílnak egy képpé
+    ScrollTrigger.create({ trigger: '.house', start: 'top 78%', end: 'top 8%', scrub: SCRUB, animation: gsap.to(S, { q: 1, ease: 'power1.out', onUpdate: render }), ...live(win) });
     const tl = gsap.timeline({ defaults: { ease: 'none' } });
-    cam(tl, 0, .22, .1); note(tl, 0, .28, .1);
-    cam(tl, 1, .36, .1); note(tl, 1, .42, .1);
-    cam(tl, 2, .5, .1); note(tl, 2, .56, .1);
-    camOut(tl, .64, .08);
-    tl.to('.house__credit', { opacity: 1, duration: .06 }, .3)
-      .to([lab, '#houseNotes'], { opacity: 0, duration: .05 }, .74)
-      .fromTo(R0, { k: 0 }, { k: 1, duration: .16, onUpdate: archClip }, .76)
-      .to(dw, { opacity: 0, duration: .08 }, .84)
-      .to('.house__credit', { opacity: 0, duration: .06 }, .84)
-      .to({}, { duration: .06 }, .94);
-    houseST = ScrollTrigger.create({ trigger: '.house', start: 'top top', end: 'bottom bottom', scrub: SCRUB, animation: tl, invalidateOnRefresh: true,
-      onToggle: st => zoom.classList.toggle('is-live', st.isActive) });
+    tl.to(S, { p: 1, duration: .72, onUpdate: render }, .14).to({}, { duration: .14 }, .86);
+    ScrollTrigger.create({ trigger: '.house', start: 'top top', end: 'bottom bottom', scrub: .7, animation: tl, invalidateOnRefresh: true, ...live(win) });
   } else {
-    // érintőn egy rövid film: a rajz, a három megjegyzés, majd a mai fotó
-    draw.pause(0);
-    const T = draw.duration();
-    const film = gsap.timeline({ paused: true });
-    film.call(() => draw.timeScale(T / 2.6).play(0), null, 0);
-    cam(film, 0, 2.5, 1.1); note(film, 0, 3.2, 1.2);
-    cam(film, 1, 4.6, 1.1); note(film, 1, 5.3, 1.2);
-    cam(film, 2, 6.7, 1.1); note(film, 2, 7.4, 1.2);
-    camOut(film, 8.9, 1.1);
-    film.to([lab, '#houseNotes'], { opacity: 0, duration: .5 }, 10.6)
-      .fromTo(R0, { k: 0 }, { k: 1, duration: 1.9, ease: 'power1.inOut', onUpdate: archClip }, 10.6)
-      .to(dw, { opacity: 0, duration: .8 }, 11.5)
-      .add(() => zoom.classList.remove('is-live'));
-    ScrollTrigger.create({ trigger: '#housePic', start: 'top 62%', once: true, onEnter: () => { zoom.classList.add('is-live'); film.play(); } });
+    ScrollTrigger.create({ trigger: pic, start: 'top 72%', once: true, onEnter: () => {
+      win.classList.add('is-live');
+      gsap.timeline({ onComplete: () => win.classList.remove('is-live') })
+        .to(S, { q: 1, duration: 1.5, ease: 'power2.out', onUpdate: render })
+        .to(S, { p: 1, duration: 2.1, ease: 'none', onUpdate: render }, '+=.35');
+    } });
   }
+}
+
+/* ---------- Szalon: a két kép egy közös függőleges vonalból nyílik szét, mint egy szárnyas ajtó ---------- */
+function setupSalon() {
+  const pair = $('#salonPair'); if (!pair || RM) return;
+  const a = $('.salon__a .salon__in', pair), b = $('.salon__b .salon__in', pair);
+  const seam = $('.salon__seam i', pair), fin = $('.salon__seam svg', pair), caps = $$('figcaption', pair);
+  gsap.set(a, { clipPath: 'inset(0% 0% 0% 100%)' }); gsap.set(b, { clipPath: 'inset(0% 100% 0% 0%)' });
+  gsap.set(seam, { scaleY: 0 }); gsap.set(fin, { opacity: 0, y: -12 }); gsap.set(caps, { opacity: 0, y: 12 });
+  const end = FINE ? 1.12 : 1;
+  const tl = gsap.timeline({ defaults: { ease: 'none' } });
+  tl.to(fin, { opacity: 1, y: 0, duration: .16, ease: 'power2.out' }, 0)
+    .to(seam, { scaleY: 1, duration: .3, ease: 'power2.inOut' }, .06)
+    .to(a, { clipPath: 'inset(0% 0% 0% 0%)', duration: .62, ease: 'power3.inOut' }, .3)
+    .to(b, { clipPath: 'inset(0% 0% 0% 0%)', duration: .62, ease: 'power3.inOut' }, .3)
+    .fromTo($$('img', pair), { scale: 1.32 }, { scale: end, duration: .7, ease: 'power2.out' }, .3)
+    .to(caps, { opacity: 1, y: 0, duration: .2, stagger: .06, ease: 'power2.out' }, .78);
+  drive(tl, { trigger: pair, start: 'top 84%', end: 'center 46%', touch: 'top 74%' }, [a, b], 2.6);
 }
 
 /* ---------- Címek felúszása ---------- */
@@ -755,31 +673,74 @@ function revealSplit(el, delay) {
 function setupSplits() {
   $$('.split').forEach(el => {
     if (el.id === 'heroH') return;
-    if (el.closest('.house__state')) { if (el.closest('.house__state').dataset.state === '0') ScrollTrigger.create({ trigger: '.house', start: 'top 60%', once: true, onEnter: () => revealSplit(el) }); return; }
     ScrollTrigger.create({ trigger: el, start: 'top 88%', once: true, onEnter: () => revealSplit(el) });
   });
 }
 
-/* ---------- A műhely vízszintes sora ---------- */
-let shopTween = null;
+/* ---------- A műhely: egérrel egy kitűzött ívablak, amiben a sütemények egymás után emelkednek fel, mint a vitrin polcai;
+   mellette a lista mutatja, hol tartunk. Érintőn és keskeny képernyőn a képek sorban jönnek, ívtetővel. ---------- */
+function buildShopList() {
+  const list = $('#shopList'); if (!list) return;
+  const on = $('li.on', list), k = on ? $$('li', list).indexOf(on) : 0;
+  list.innerHTML = $$('#shopWin .sh').map((f, i) => `<li${i === k ? ' class="on"' : ''}><small>0${i + 1}</small><b>${$('b', f).innerHTML}</b><span><em>${$('figcaption span', f).innerHTML}</em></span></li>`).join('');
+}
 function setupShop() {
-  const sec = $('.shop'), track = $('#shopTrack');
+  const sec = $('.shop'), run = $('#shopRun'), win = $('#shopWin'), list = $('#shopList');
+  const figs = $$('.sh', win), imgs = figs.map(f => $('img', f)), n = figs.length;
+  buildShopList();
   const mm = gsap.matchMedia();
   mm.add('(min-width: 900px) and (hover: hover) and (pointer: fine)', () => {
-    const dist = () => Math.max(0, track.scrollWidth - innerWidth);
-    const size = () => { sec.style.height = (innerHeight + dist()) + 'px'; };
-    size();
-    const bar = $('#shopBar');
-    shopTween = gsap.to(track, { x: () => -dist(), ease: 'none', scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: .5, invalidateOnRefresh: true, onRefreshInit: size,
-      onUpdate: st => gsap.set(bar, { scaleX: st.progress }) } });
-    // a kép a kereten belül lassabban halad, mint a sor: mélységet ad, a keret nem dől meg
-    if (!RM) $$('.frame__in img', track).forEach(im => {
-      gsap.set(im, { scale: 1.16 });
-      gsap.fromTo(im, { xPercent: -6 }, { xPercent: 6, ease: 'none', scrollTrigger: { trigger: im.closest('.card'), containerAnimation: shopTween, start: 'left right', end: 'right left', scrub: true } });
-    });
-    return () => { sec.style.height = ''; shopTween = null; };
+    sec.classList.add('shop--pin');
+    const arch = $('#shopArch'), ap = $$('path', arch);
+    const geom = () => {
+      const w = win.offsetWidth, h = win.offsetHeight, a = archHalves(0, 0, w, h);
+      win.style.setProperty('--arch', `path('${a.full}')`);
+      const W = w + 26, Hh = h + 15, o = archHalves(.5, .5, W - 1, Hh - .5);
+      arch.setAttribute('width', W); arch.setAttribute('height', Hh); arch.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
+      ap[0].setAttribute('d', o.L); ap[1].setAttribute('d', o.R);
+      run.style.height = (innerHeight + (n - 1) * innerHeight * .78) + 'px';
+    };
+    geom();
+    gsap.set(ap, { strokeDashoffset: -OFF });
+    const draw = gsap.to(ap, { strokeDashoffset: 0, ease: FLOW });
+    const dST = ScrollTrigger.create({ trigger: run, start: 'top 72%', end: 'top 8%', scrub: SCRUB, animation: draw });
+    // minden új kép alulról emelkedik fel az ívben, az előző kicsit feljebb húzódik mögötte
+    gsap.set(imgs[0], { scale: 1.04 });
+    const tl = gsap.timeline({ defaults: { ease: 'none' } });
+    for (let i = 1; i < n; i++) {
+      const at = i - 1 + .45;
+      gsap.set(figs[i], { clipPath: 'inset(100% 0% 0% 0%)' });
+      tl.to(figs[i], { clipPath: 'inset(0% 0% 0% 0%)', duration: .8, ease: 'power2.inOut' }, at)
+        .fromTo(imgs[i], { scale: 1.2, yPercent: 8 }, { scale: 1.04, yPercent: 0, duration: .9, ease: 'power2.out' }, at)
+        .to(imgs[i - 1], { yPercent: -9, duration: .8, ease: 'power2.inOut' }, at);
+    }
+    tl.to({}, { duration: .25 }, n - 1 + .3);
+    const items = () => $$('li', list);
+    let cur = 0;
+    const st = ScrollTrigger.create({ trigger: run, start: 'top top', end: 'bottom bottom', scrub: .6, animation: tl, invalidateOnRefresh: true, onRefreshInit: geom,
+      onUpdate: s => {
+        const t = s.progress * tl.duration(), k = Math.max(0, Math.min(n - 1, Math.floor(t + .15)));
+        list.style.setProperty('--prog', s.progress.toFixed(4));
+        if (k !== cur) { cur = k; items().forEach((li, i) => li.classList.toggle('on', i === k)); }
+      }, ...live(figs) });
+    return () => {
+      sec.classList.remove('shop--pin'); run.style.height = ''; dST.kill(); st.kill(); tl.kill(); draw.kill();
+      gsap.set([...figs, ...imgs], { clearProps: 'all' });
+    };
   });
-  return shopTween;
+  mm.add('not ((min-width: 900px) and (hover: hover) and (pointer: fine))', () => {
+    if (RM) return;
+    const sts = figs.map(f => {
+      const im = $('.sh__img', f), cap = $('figcaption', f);
+      gsap.set(im, { clipPath: 'inset(100% 0% 0% 0%)' }); gsap.set(cap, { opacity: 0, y: 14 });
+      return ScrollTrigger.create({ trigger: f, start: 'top 86%', once: true, onEnter: () => {
+        gsap.to(im, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4, ease: 'expo.inOut' });
+        gsap.fromTo($('img', im), { scale: 1.2 }, { scale: 1, duration: 1.8, ease: 'expo.out' });
+        gsap.to(cap, { opacity: 1, y: 0, duration: 1.1, delay: .5, ease: EASE });
+      } });
+    });
+    return () => sts.forEach(x => x.kill());
+  });
 }
 
 /* ---------- Kínálat: kép az egér mellett ----------
@@ -787,6 +748,7 @@ function setupShop() {
    lelépve, ablakváltáskor és ha a kínálat kikerül a képből, mindig eltűnik. */
 function setupPeek() {
   const peek = $('#peek'); if (!peek || !FINE) return;
+  document.body.append(peek);
   const W = 260, Ht = 325, a = archHalves(.5, .5, W - 1, Ht - 1);
   peek.style.clipPath = `path('${a.full}')`;
   const imgs = $$('img', peek);
@@ -842,8 +804,7 @@ function setupLead() {
 function setupParallax() {
   if (!FINE || RM) return;
   $$('.salon img.px').forEach(im => {
-    gsap.set(im, { scale: 1.12 });
-    gsap.fromTo(im, { yPercent: -5 }, { yPercent: 5, ease: 'none', scrollTrigger: { trigger: im.closest('.frame'), start: 'top bottom', end: 'bottom top', scrub: true } });
+    gsap.fromTo(im, { yPercent: -5 }, { yPercent: 5, ease: 'none', scrollTrigger: { trigger: im.closest('.salon__in'), start: 'top bottom', end: 'bottom top', scrub: true } });
   });
 }
 
@@ -858,6 +819,28 @@ function setupMenuRise() {
     gsap.set(c, { y: 60, rotateX: 7, transformPerspective: 1500, transformOrigin: '50% 100%', opacity: .001 });
     ScrollTrigger.create({ trigger: '.menu', start: 'top 82%', once: true, onEnter: () => gsap.to(c, { y: 0, rotateX: 0, opacity: 1, duration: 1.5, ease: 'expo.out', clearProps: 'transform,opacity' }) });
   }
+}
+
+/* ---------- Szakaszhatár: minden szakasz papírlapként csúszik a előzőre, a felső éle a kupola íve (barack hajszálvonallal).
+   Egérrel a görgetés lapítja ki a beérkezés alatt, érintőn egyszer, időre; nyugalomban egy kis csúcs megmarad. ---------- */
+function setupCaps() {
+  const REST = .16;
+  $$('.sec').forEach(sec => {
+    const c = document.createElement('div'); c.className = 'cap'; c.setAttribute('aria-hidden', 'true');
+    c.innerHTML = '<svg viewBox="0 0 1000 100" preserveAspectRatio="none"><path class="cap__f"/><path class="cap__l"/></svg>';
+    sec.prepend(c);
+    const [f, l] = $$('path', c), K = { k: 1 };
+    const set = () => {
+      const k = K.k, Y = t => (100 - 100 * k * t).toFixed(2);
+      const d = `M0 100C300 100 360 ${Y(.55)} 430 ${Y(.8)}C470 ${Y(.93)} 492 ${Y(.975)} 500 ${Y(1)}C508 ${Y(.975)} 530 ${Y(.93)} 570 ${Y(.8)}C640 ${Y(.55)} 700 100 1000 100`;
+      f.setAttribute('d', d + 'V101H0Z'); l.setAttribute('d', d);
+    };
+    // az első lap a nyitókép alján már nyugalomban van (különben betöltéskor belelógna a képbe)
+    if (RM || sec.classList.contains('free')) { K.k = REST; set(); return; }
+    set();
+    if (FINE) gsap.to(K, { k: REST, ease: 'none', onUpdate: set, scrollTrigger: { trigger: sec, start: 'top bottom', end: 'top 28%', scrub: .6 } });
+    else ScrollTrigger.create({ trigger: sec, start: 'top 96%', once: true, onEnter: () => gsap.to(K, { k: REST, duration: 1.6, ease: 'power2.inOut', onUpdate: set }) });
+  });
 }
 
 /* ---------- Puha görgetés egérrel: Lenis a GSAP órájáról hajtva, érintőn natív görgetés ---------- */
@@ -896,7 +879,7 @@ function setupCursor() {
     const t = e.target; if (!t.closest) return;
     const link = !!t.closest('a, button, li[data-peek]');
     c.classList.toggle('is-link', link);
-    c.classList.toggle('is-photo', !link && !!t.closest('.frame, .house__pic, .hero__win'));
+    c.classList.toggle('is-photo', !link && !!t.closest('.frame, .house__pic, .hero__win, .salon__in, .sh__img'));
     c.classList.toggle('is-dark', !!t.closest('.ft'));
   });
   document.addEventListener('mouseleave', () => c.classList.remove('is-on'));
@@ -999,10 +982,12 @@ function init() {
   setupAnchors();
   setupHeader();
   buildStrikes();
+  setupCaps();
   setupHouse();
-  const ct = setupShop();
-  setupFrames(ct);
-  setupCarts(ct);
+  setupSalon();
+  setupShop();
+  setupFrames(null);
+  setupCarts(null);
   setupOrns();
   setupSplits();
   setupPeek();
@@ -1027,7 +1012,7 @@ function init() {
   addEventListener('resize', () => {
     if (Math.abs(innerWidth - rw) < 2 && Math.abs(innerHeight - rh) < 120) return;
     rw = innerWidth; rh = innerHeight;
-    heroLayout(); buildStrikes(); houseFrameGeom(); curtain(); if (G.resize) G.resize();
+    heroLayout(); buildStrikes(); if (houseResize) houseResize(); curtain(); if (G.resize) G.resize();
     $$('.frame').forEach(frameGeom); $$('[data-cart]').forEach(cartGeom);
     ScrollTrigger.refresh();
   });

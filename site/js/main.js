@@ -34,7 +34,6 @@ const HW = (() => {
     return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(r);
   } catch (e) { return false; }
 })();
-if (HW && !RM) HTML.classList.add('grain');
 /* Görgetéshez kötött rajzolás: egérrel a görgetés viszi, érintőn egyszer lefut, amikor a látótérbe ér (dur mp alatt). */
 function drive(tl, cfg, liveEls, dur) {
   if (FINE) return ScrollTrigger.create(Object.assign({ animation: tl, scrub: SCRUB }, cfg, liveEls ? live(liveEls) : {}));
@@ -282,9 +281,10 @@ function heroLayout() {
     root.setProperty('--colw', Math.max(220, (vw - Wa) / 2 - pad - gap) + 'px');
     root.setProperty('--hb', (vh - by + 30) + 'px');
   } else {
-    root.setProperty('--ht', (by + 26) + 'px');
+    root.setProperty('--rh', $('#heroR').offsetHeight + 'px');
     root.setProperty('--hh', $('#heroH').offsetHeight + 'px');
   }
+  H.lastO = -1;
   heroRender();
 }
 
@@ -292,6 +292,8 @@ const NAVS = '.hd__nav, .hd__now, .hd__tools, #burger';
 const G = { ok: false, m: [0, 0], mT: [0, 0], run: false, vis: true, x: 0, y: 0, sc: 1, draw: null, init: null };
 /* Z.s: az ablak nagyítása, Z.p: a fotó útja a végső helyéig (0..1), Z.k: a nyitány lassú „leülése” */
 const Z = { s: 1, p: 0, k: 1, z: 1, d: 0 };
+/* O.d: a nyitány után az ív két fele szárnyas ajtóként széthúzódik és felemelkedik, a fotó kitölti a képernyőt */
+const O = { d: 0 };
 function heroRender() {
   const P = H.photo; if (!P) return;
   const A = H.A, p = Z.p, k = Z.k;
@@ -302,6 +304,7 @@ function heroRender() {
   $('#heroImg').style.transform = `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${sc.toFixed(5)})`;
   G.x = x; G.y = y; G.sc = sc;
   if (G.ok && G.vis) G.draw();
+  if (O.d > 0) { heroOpenRender(); return; }
   if (Z.s !== H.lastS) {
     H.lastS = Z.s;
     $('#heroWin').style.clipPath = Z.s >= H.S - 1e-3 ? 'none' : `path('${H.arch(Z.s).full}')`;
@@ -313,6 +316,31 @@ function heroRender() {
       H.lastL = t === H.sL ? H.sL : -1;
     }
   }
+}
+/* Az ív bal és jobb fele szétválik (köztük egyenes szemöldökkel), felemelkedik és kifut a képből, a talpa leér a képernyő aljáig.
+   A vonalak a két féllel mennek, és közben elhalványulnak; a kép közben a végső, teljes képernyős helyére úszik. */
+function heroOpenRender() {
+  const d = O.d, A = H.A, Wa = A.w, Ha = A.h, s = archHalves(A.x, A.y, Wa, Ha).s;
+  if (d >= 1) {
+    if (H.lastO !== 1) { $('#heroWin').style.clipPath = 'none'; gsap.set('#heroLines', { autoAlpha: 0 }); H.lastO = 1; }
+    return;
+  }
+  H.lastO = d;
+  const e = gsap.parseEase('power3.inOut')(d);
+  const dx = e * (A.cx + 40), dy = e * (A.y + Ha * .55);
+  let by = A.y + Ha + e * e * (H.vh - A.y - Ha + 4);
+  // a kép alsó 12%-a (a fotós jelzése) sosem kerül a nyílásba
+  by = Math.min(by, G.y + H.photo.Hp * G.sc * .88);
+  const x0 = A.x - dx, x1 = A.x + dx, y0 = A.y - dy;
+  const p = (x, y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+  const path = `M${p(x0, by)}L${p(x0, y0 + s)}C${p(x0, y0 + s * .42)} ${p(x0 + Wa * .30, y0 + s * .36)} ${p(x0 + Wa * .41, y0 + s * .17)}C${p(x0 + Wa * .465, y0 + s * .07)} ${p(x0 + Wa * .49, y0 + s * .025)} ${p(x0 + Wa * .5, y0)}L${p(x1 + Wa * .5, y0)}C${p(x1 + Wa * .51, y0 + s * .025)} ${p(x1 + Wa * .535, y0 + s * .07)} ${p(x1 + Wa * .59, y0 + s * .17)}C${p(x1 + Wa * .70, y0 + s * .36)} ${p(x1 + Wa, y0 + s * .42)} ${p(x1 + Wa, y0 + s)}L${p(x1 + Wa, by)}Z`;
+  $('#heroWin').style.clipPath = `path('${path}')`;
+  const fade = Math.max(0, 1 - d * 1.7).toFixed(3);
+  ['#hlL', '#hlL2'].forEach(id => { const el = $(id); el.setAttribute('transform', `translate(${-dx.toFixed(1)} ${-dy.toFixed(1)})`); el.style.opacity = fade; });
+  ['#hlR', '#hlR2'].forEach(id => { const el = $(id); el.setAttribute('transform', `translate(${dx.toFixed(1)} ${-dy.toFixed(1)})`); el.style.opacity = fade; });
+  const f = $('#hlFin'); f.setAttribute('transform', `translate(0 ${-dy.toFixed(1)})`); f.style.opacity = Math.max(0, 1 - d * 3).toFixed(3);
+  const g = Math.max(0, 1 - d * 2.6).toFixed(3);
+  ['#hlGl', '#hlGr', '#hlCurls'].forEach(id => { $(id).style.opacity = g; });
 }
 function heroPrep() {
   gsap.set(['#hlFin', '#hlGl', '#hlGr', '#hlCl', '#hlCr'], { strokeDashoffset: OFF });
@@ -339,11 +367,16 @@ function heroIntro() {
     .to(Z, { k: 1, duration: 2.8, ease: 'expo.out', onUpdate: heroRender }, t1 + .25)
     .to(['#hlGl', '#hlGr'], { strokeDashoffset: 0, duration: T2, ease: 'power1.out' }, t2)
     .to(['#hlCl', '#hlCr'], { strokeDashoffset: 0, duration: 1.3, ease: 'power2.out' }, t2 + .04)
-    .add(() => revealSplit($('#heroH')), t2 - .1)
-    .to('#heroR > *', { opacity: 1, y: 0, duration: 1.1, stagger: .09 }, t2 + .25)
-    .to(NAVS, { opacity: 1, duration: 1, ease: 'power2.out', stagger: .06 }, t2 + T2 * .5)
-    .add(() => { $('#heroH').classList.add('is-in'); gsap.set(['.hd__logo', NAVS, '#heroR > *'], { clearProps: 'opacity,transform' }); }, Math.max(t2 + T2, t1 + 3.1))
-    .add(() => { if (G.init) G.init(); }, '+=.6');
+    .to(NAVS, { opacity: 1, duration: 1, ease: 'power2.out', stagger: .06 }, t2 + T2 * .5);
+  // az ív kinyílik, és a fotó lesz a kezdőkép; a feliratok csak utána jönnek
+  const tO = Math.max(t2 + T2 * .8, t1 + 2.6), DO = 2.2;
+  tl.to(Z, { p: 1, duration: DO * .8, ease: 'power2.inOut', onUpdate: heroRender }, tO)
+    .to(O, { d: 1, duration: DO, ease: 'none', onUpdate: heroRender }, tO)
+    .add(() => HTML.classList.add('hero-open'), tO + DO * .45)
+    .add(() => revealSplit($('#heroH')), tO + DO * .72)
+    .to('#heroR > *', { opacity: 1, y: 0, duration: 1.1, stagger: .09 }, tO + DO * .8)
+    .add(() => { $('#heroH').classList.add('is-in'); gsap.set(['.hd__logo', NAVS, '#heroR > *'], { clearProps: 'opacity,transform' }); }, tO + DO + 1)
+    .add(() => { if (G.init) G.init(); }, '+=.4');
   return tl;
 }
 
@@ -691,28 +724,28 @@ function setupShop() {
   const mm = gsap.matchMedia();
   mm.add('(min-width: 900px) and (hover: hover) and (pointer: fine)', () => {
     sec.classList.add('shop--pin');
-    const arch = $('#shopArch'), ap = $$('path', arch);
+    // minden kép a saját arányában áll (semmi nem vágódik le), a keret a mindenkori képhez igazodik
+    const frame = $('#shopFrame'), RT = imgs.map(im => (+im.getAttribute('width')) / (+im.getAttribute('height')));
+    // négyzetes ablakban: az álló kép teljes magas, a fekvő teljes széles
+    const fw = i => Math.min(win.offsetWidth, win.offsetHeight * RT[i]), fh = i => fw(i) / RT[i];
+    const fx = i => (win.offsetWidth - fw(i)) / 2, fy = i => (win.offsetHeight - fh(i)) / 2;
     const geom = () => {
-      const w = win.offsetWidth, h = win.offsetHeight, a = archHalves(0, 0, w, h);
-      win.style.setProperty('--arch', `path('${a.full}')`);
-      const W = w + 26, Hh = h + 15, o = archHalves(.5, .5, W - 1, Hh - .5);
-      arch.setAttribute('width', W); arch.setAttribute('height', Hh); arch.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
-      ap[0].setAttribute('d', o.L); ap[1].setAttribute('d', o.R);
+      figs.forEach((f, i) => { Object.assign(f.style, { width: fw(i) + 'px', height: fh(i) + 'px', left: fx(i) + 'px', top: fy(i) + 'px' }); });
       run.style.height = (innerHeight + (n - 1) * innerHeight * .78) + 'px';
     };
     geom();
-    gsap.set(ap, { strokeDashoffset: -OFF });
-    const draw = gsap.to(ap, { strokeDashoffset: 0, ease: FLOW });
-    const dST = ScrollTrigger.create({ trigger: run, start: 'top 72%', end: 'top 8%', scrub: SCRUB, animation: draw });
-    // minden új kép alulról emelkedik fel az ívben, az előző kicsit feljebb húzódik mögötte
-    gsap.set(imgs[0], { scale: 1.04 });
+    gsap.set(frame, { width: () => fw(0) + 24, height: () => fh(0) + 24, x: () => fx(0) - 12, y: () => fy(0) - 12 });
+    const draw = gsap.fromTo(frame, { opacity: 0, scaleY: .92 }, { opacity: 1, scaleY: 1, ease: 'power2.out' });
+    const dST = ScrollTrigger.create({ trigger: run, start: 'top 72%', end: 'top 12%', scrub: SCRUB, animation: draw });
+    // a következő kép alulról emelkedik fel, a keret közben átméreteződik, az előző elhalványul mögötte
     const tl = gsap.timeline({ defaults: { ease: 'none' } });
     for (let i = 1; i < n; i++) {
-      const at = i - 1 + .45;
+      const at = i - 1 + .45, k = i;
       gsap.set(figs[i], { clipPath: 'inset(100% 0% 0% 0%)' });
-      tl.to(figs[i], { clipPath: 'inset(0% 0% 0% 0%)', duration: .8, ease: 'power2.inOut' }, at)
-        .fromTo(imgs[i], { scale: 1.2, yPercent: 8 }, { scale: 1.04, yPercent: 0, duration: .9, ease: 'power2.out' }, at)
-        .to(imgs[i - 1], { yPercent: -9, duration: .8, ease: 'power2.inOut' }, at);
+      tl.to(frame, { width: () => fw(k) + 24, height: () => fh(k) + 24, x: () => fx(k) - 12, y: () => fy(k) - 12, duration: .8, ease: 'power2.inOut' }, at)
+        .to(figs[i], { clipPath: 'inset(0% 0% 0% 0%)', duration: .8, ease: 'power2.inOut' }, at)
+        .fromTo(imgs[i], { scale: 1.1 }, { scale: 1, duration: .9, ease: 'power2.out' }, at)
+        .to(figs[i - 1], { opacity: 0, duration: .45, ease: 'power1.in' }, at + .3);
     }
     tl.to({}, { duration: .25 }, n - 1 + .3);
     const items = () => $$('li', list);
@@ -725,7 +758,7 @@ function setupShop() {
       }, ...live(figs) });
     return () => {
       sec.classList.remove('shop--pin'); run.style.height = ''; dST.kill(); st.kill(); tl.kill(); draw.kill();
-      gsap.set([...figs, ...imgs], { clearProps: 'all' });
+      gsap.set([...figs, ...imgs, frame], { clearProps: 'all' });
     };
   });
   mm.add('not ((min-width: 900px) and (hover: hover) and (pointer: fine))', () => {
@@ -735,7 +768,7 @@ function setupShop() {
       gsap.set(im, { clipPath: 'inset(100% 0% 0% 0%)' }); gsap.set(cap, { opacity: 0, y: 14 });
       return ScrollTrigger.create({ trigger: f, start: 'top 86%', once: true, onEnter: () => {
         gsap.to(im, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4, ease: 'expo.inOut' });
-        gsap.fromTo($('img', im), { scale: 1.2 }, { scale: 1, duration: 1.8, ease: 'expo.out' });
+        gsap.fromTo($('img', im), { scale: 1.12 }, { scale: 1, duration: 1.8, ease: 'expo.out' });
         gsap.to(cap, { opacity: 1, y: 0, duration: 1.1, delay: .5, ease: EASE });
       } });
     });
@@ -824,7 +857,7 @@ function setupMenuRise() {
 /* ---------- Szakaszhatár: minden szakasz papírlapként csúszik a előzőre, a felső éle a kupola íve (barack hajszálvonallal).
    Egérrel a görgetés lapítja ki a beérkezés alatt, érintőn egyszer, időre; nyugalomban egy kis csúcs megmarad. ---------- */
 function setupCaps() {
-  const REST = .16;
+  const REST = .12;
   $$('.sec').forEach(sec => {
     const c = document.createElement('div'); c.className = 'cap'; c.setAttribute('aria-hidden', 'true');
     c.innerHTML = '<svg viewBox="0 0 1000 100" preserveAspectRatio="none"><path class="cap__f"/><path class="cap__l"/></svg>';
@@ -1001,6 +1034,7 @@ function init() {
   reveals();
   if (RM) {
     gsap.set('.hl', { strokeDashoffset: 0 }); gsap.set('#heroCur', { autoAlpha: 0 }); gsap.set($$('#heroH .w>span'), { yPercent: 0 });
+    Z.p = 1; O.d = 1; H.lastO = -1; HTML.classList.add('hero-open'); heroRender();
   } else {
     heroPrep();
     heroScroll();

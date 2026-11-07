@@ -113,3 +113,9 @@ kopi: a régi fotó nélkül az „Akkor” rész furcsa, legyen helyette valami
 - Szalon: a két kép egy közös függőleges vonalból (fent a csúcsdísszel) nyílik szét, mint egy szárnyas ajtó; alatta Bent / Kint.
 - Műhely: az oldalra görgetés helyett kitűzött ívablak, amiben a sütemények alulról egymás után emelkednek fel; mellette számozott lista mutatja, melyik látszik. Érintőn sorban, ívtetős képekkel. A tortarendelés külön, alatta.
 - Vélemények: Newsreader dőlt (a Gilda kis méretben nehézkes volt).
+
+## v4.1 (2026-11-07), kopi visszajelzése
+- Nyitókép nem lehet kék. Vissza a krémszínre; a nyitány (vonalak, ív, a kép kiformálódik) ugyanaz, utána az ív két fele szárnyas ajtóként széthúzódik és felemelkedik, a fotó kitölti a képernyőt. A felirat és a gombok csak ezután jönnek, alul sötétedés, fent halvány krém sáv a menü alatt. A fotós jelzése (alsó 12%) sosem kerül a nyílásba.
+- Szakaszhatár íve kisebb (22–60 px magas), nyugalomban alig látszik.
+- Műhely: minden kép a saját arányában áll, semmi nem vágódik le; a vékony keret átméreteződik a következő képhez, az előző elhalványul.
+- Papír-szemcse háttér kikerült.

@@ -119,3 +119,9 @@ kopi: a régi fotó nélkül az „Akkor” rész furcsa, legyen helyette valami
 - Szakaszhatár íve kisebb (22–60 px magas), nyugalomban alig látszik.
 - Műhely: minden kép a saját arányában áll, semmi nem vágódik le; a vékony keret átméreteződik a következő képhez, az előző elhalványul.
 - Papír-szemcse háttér kikerült.
+
+## v4.2 (2026-11-07)
+- A nyitókép íve kb. 1,3 mp-cel hamarabb kezd nyílni (a nyílás tempója ugyanaz), a keretvonalak rövidebbek.
+- A nyitókép alján nincs ív: az első szakasz egyenes éllel indul, az ív csak a második szakasztól látszik.
+- Szalon: a Bent/Kint szárnyas ajtó helyett két kép a saját arányában, vékony kerettel; a terasz egészben látszik, és görgetésre kicsit gyorsabban emelkedik (csak egérrel).
+- Telefon: az étlap kis képei kevésbé vágottak (3 px sarok, nagyobb méret); a menü elcsúszott kacskaringója helyett a csúcsdísz és egy hajszálvonal.

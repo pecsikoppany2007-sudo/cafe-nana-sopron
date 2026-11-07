@@ -356,11 +356,11 @@ function heroPrep() {
    keret oldalán, és fent visszaér a logóhoz. A szakaszok sebessége a csatlakozásoknál egyezik. */
 function heroIntro() {
   const L1 = $('#hlL2').getTotalLength(), L2 = $('#hlGl').getTotalLength();
-  const T1 = 1.05, T2 = gsap.utils.clamp(1.6, 2.9, T1 * L2 / Math.max(1, L1));
-  const t1 = .72, t2 = t1 + T1;
-  const tl = gsap.timeline({ delay: .1 });
+  const T1 = 1.05, T2 = gsap.utils.clamp(1.1, 1.7, T1 * L2 / Math.max(1, L1));
+  const t1 = .55, t2 = t1 + T1;
+  const tl = gsap.timeline({ delay: .05 });
   tl.to('.hd__logo', { opacity: 1, y: 0, duration: 1.1, ease: 'power2.out' }, 0)
-    .to('#hlFin', { strokeDashoffset: 0, duration: .5, ease: 'power1.in' }, .3)
+    .to('#hlFin', { strokeDashoffset: 0, duration: .45, ease: 'power1.in' }, .18)
     .to(['#hlL2', '#hlR2'], { strokeDashoffset: 0, duration: T1, ease: 'power1.in' }, t1)
     .to(['#hlL', '#hlR'], { strokeDashoffset: 0, duration: T1 * 1.1, ease: 'power1.in' }, t1 + .14)
     .to('#heroCur', { y: () => H.curY, duration: T1 * 1.3, ease: 'power1.in', onComplete: () => gsap.set('#heroCur', { autoAlpha: 0 }) }, t1 + .04)
@@ -369,7 +369,8 @@ function heroIntro() {
     .to(['#hlCl', '#hlCr'], { strokeDashoffset: 0, duration: 1.3, ease: 'power2.out' }, t2 + .04)
     .to(NAVS, { opacity: 1, duration: 1, ease: 'power2.out', stagger: .06 }, t2 + T2 * .5);
   // az ív kinyílik, és a fotó lesz a kezdőkép; a feliratok csak utána jönnek
-  const tO = Math.max(t2 + T2 * .8, t1 + 2.6), DO = 2.2;
+  // a nyílás hamar indul (a tempója nem változott)
+  const tO = t2 + .45, DO = 2.2;
   tl.to(Z, { p: 1, duration: DO * .8, ease: 'power2.inOut', onUpdate: heroRender }, tO)
     .to(O, { d: 1, duration: DO, ease: 'none', onUpdate: heroRender }, tO)
     .add(() => HTML.classList.add('hero-open'), tO + DO * .45)
@@ -675,24 +676,6 @@ function setupHouse() {
   }
 }
 
-/* ---------- Szalon: a két kép egy közös függőleges vonalból nyílik szét, mint egy szárnyas ajtó ---------- */
-function setupSalon() {
-  const pair = $('#salonPair'); if (!pair || RM) return;
-  const a = $('.salon__a .salon__in', pair), b = $('.salon__b .salon__in', pair);
-  const seam = $('.salon__seam i', pair), fin = $('.salon__seam svg', pair), caps = $$('figcaption', pair);
-  gsap.set(a, { clipPath: 'inset(0% 0% 0% 100%)' }); gsap.set(b, { clipPath: 'inset(0% 100% 0% 0%)' });
-  gsap.set(seam, { scaleY: 0 }); gsap.set(fin, { opacity: 0, y: -12 }); gsap.set(caps, { opacity: 0, y: 12 });
-  const end = FINE ? 1.12 : 1;
-  const tl = gsap.timeline({ defaults: { ease: 'none' } });
-  tl.to(fin, { opacity: 1, y: 0, duration: .16, ease: 'power2.out' }, 0)
-    .to(seam, { scaleY: 1, duration: .3, ease: 'power2.inOut' }, .06)
-    .to(a, { clipPath: 'inset(0% 0% 0% 0%)', duration: .62, ease: 'power3.inOut' }, .3)
-    .to(b, { clipPath: 'inset(0% 0% 0% 0%)', duration: .62, ease: 'power3.inOut' }, .3)
-    .fromTo($$('img', pair), { scale: 1.32 }, { scale: end, duration: .7, ease: 'power2.out' }, .3)
-    .to(caps, { opacity: 1, y: 0, duration: .2, stagger: .06, ease: 'power2.out' }, .78);
-  drive(tl, { trigger: pair, start: 'top 84%', end: 'center 46%', touch: 'top 74%' }, [a, b], 2.6);
-}
-
 /* ---------- Címek felúszása ---------- */
 function lineDelays(el) {
   let top = null, li = -1, j = 0;
@@ -836,9 +819,12 @@ function setupLead() {
 /* ---------- Szalon: a kép a kereten belül lassabban mozdul (csak egérrel) ---------- */
 function setupParallax() {
   if (!FINE || RM) return;
+  // a szalon képe a keretben lassabban mozdul; a terasz képe egészben látszik, és a kerettel együtt kicsit gyorsabban emelkedik
   $$('.salon img.px').forEach(im => {
-    gsap.fromTo(im, { yPercent: -5 }, { yPercent: 5, ease: 'none', scrollTrigger: { trigger: im.closest('.salon__in'), start: 'top bottom', end: 'bottom top', scrub: true } });
+    gsap.set(im, { scale: 1.1 });
+    gsap.fromTo(im, { yPercent: -4 }, { yPercent: 4, ease: 'none', scrollTrigger: { trigger: im.closest('.frame'), start: 'top bottom', end: 'bottom top', scrub: true } });
   });
+  if (!isMob()) gsap.fromTo('.salon__b', { y: 90 }, { y: -30, ease: 'none', scrollTrigger: { trigger: '.salon__pair', start: 'top bottom', end: 'bottom top', scrub: true } });
 }
 
 /* ---------- Étlap: a kártya papírlapként emelkedik fel és simul ki ---------- */
@@ -858,7 +844,8 @@ function setupMenuRise() {
    Egérrel a görgetés lapítja ki a beérkezés alatt, érintőn egyszer, időre; nyugalomban egy kis csúcs megmarad. ---------- */
 function setupCaps() {
   const REST = .12;
-  $$('.sec').forEach(sec => {
+  // az első szakasz (a nyitókép alatt) egyenes éllel indul: a kezdőképen semmi nem lóg fel
+  $$('.sec:not(.free)').forEach(sec => {
     const c = document.createElement('div'); c.className = 'cap'; c.setAttribute('aria-hidden', 'true');
     c.innerHTML = '<svg viewBox="0 0 1000 100" preserveAspectRatio="none"><path class="cap__f"/><path class="cap__l"/></svg>';
     sec.prepend(c);
@@ -869,7 +856,7 @@ function setupCaps() {
       f.setAttribute('d', d + 'V101H0Z'); l.setAttribute('d', d);
     };
     // az első lap a nyitókép alján már nyugalomban van (különben betöltéskor belelógna a képbe)
-    if (RM || sec.classList.contains('free')) { K.k = REST; set(); return; }
+    if (RM) { K.k = REST; set(); return; }
     set();
     if (FINE) gsap.to(K, { k: REST, ease: 'none', onUpdate: set, scrollTrigger: { trigger: sec, start: 'top bottom', end: 'top 28%', scrub: .6 } });
     else ScrollTrigger.create({ trigger: sec, start: 'top 96%', once: true, onEnter: () => gsap.to(K, { k: REST, duration: 1.6, ease: 'power2.inOut', onUpdate: set }) });
@@ -912,7 +899,7 @@ function setupCursor() {
     const t = e.target; if (!t.closest) return;
     const link = !!t.closest('a, button, li[data-peek]');
     c.classList.toggle('is-link', link);
-    c.classList.toggle('is-photo', !link && !!t.closest('.frame, .house__pic, .hero__win, .salon__in, .sh__img'));
+    c.classList.toggle('is-photo', !link && !!t.closest('.frame, .house__pic, .hero__win, .sh__img'));
     c.classList.toggle('is-dark', !!t.closest('.ft'));
   });
   document.addEventListener('mouseleave', () => c.classList.remove('is-on'));
@@ -1017,7 +1004,6 @@ function init() {
   buildStrikes();
   setupCaps();
   setupHouse();
-  setupSalon();
   setupShop();
   setupFrames(null);
   setupCarts(null);

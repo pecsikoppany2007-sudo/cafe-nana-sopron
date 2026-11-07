@@ -182,17 +182,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .salon__text{display:grid;grid-template-columns:5fr 6fr;gap:clamp(30px,5vw,90px);align-items:end;margin-bottom:clamp(60px,9vh,100px)}
 .salon__text .h2{margin:0}
 .salon__text p{max-width:46ch;margin:0}
-.salon__pair{display:grid;grid-template-columns:3fr 12px 1.2fr;gap:clamp(14px,1.8vw,30px);align-items:stretch}
-.salon__a,.salon__b{margin:0;display:flex;flex-direction:column;min-width:0}
-.salon__in{position:relative;overflow:hidden;background:var(--paper2);flex:1 1 auto}
-.salon__a .salon__in{aspect-ratio:3/2;flex:none}
-.salon__in img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.salon__pair figcaption{margin-top:16px;font:400 clamp(1.25rem,1.1rem + .4vw,1.6rem)/1 var(--fd);color:var(--ink)}
-.salon__a figcaption{text-align:right}
-.salon__seam{position:relative}
-.salon__seam svg{position:absolute;left:0;top:-34px;width:12px;height:22px;fill:var(--line)}
-.salon__seam i{position:absolute;left:50%;top:-6px;bottom:calc(16px + .5em);width:1px;margin-left:-.5px;background:var(--line);transform-origin:50% 0}
-.js .salon__in{clip-path:inset(0 0 0 0)}
+.salon__pair{display:grid;grid-template-columns:1.5fr .8fr;gap:clamp(20px,2.6vw,44px);align-items:start}
+.salon__a .frame__in{aspect-ratio:3/2}
+.salon__b .frame__in{aspect-ratio:4/5}
+.salon__b{margin-top:clamp(30px,6vh,70px)}
 
 /* 5. A műhelyből: érintőn és keskeny képernyőn sorban, ívtetős képekkel; egérrel egy ívablak, amiben a sütemények egymás után emelkednek fel */
 .shop{position:relative;padding:clamp(90px,13vh,150px) 0 clamp(90px,12vh,140px)}
@@ -340,7 +333,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .drawer.is-open>*:not(.drawer__bg){opacity:1;transition:opacity .6s .35s}
   .drawer nav{display:flex;flex-direction:column;gap:6px}
   .drawer nav a{font:400 clamp(2.4rem,11vw,3.4rem)/1.12 var(--fd);color:var(--ink);text-decoration:none}
-  .drawer__orn{width:120px;height:40px;margin-bottom:26px;fill:none;stroke:var(--line);stroke-width:1.1}
+  .drawer__orn{display:flex;align-items:center;gap:12px;margin-bottom:30px}
+  .drawer__orn svg{width:12px;height:22px;fill:var(--line)}
+  .drawer__orn i{display:block;width:72px;height:1px;background:var(--line)}
   .drawer__foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid rgba(191,139,98,.4)}
   .drawer__foot>a{color:var(--ink);text-decoration:none;font-weight:520}
 
@@ -367,9 +362,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .house__text p{font-size:.98rem}
 
   .salon__text{grid-template-columns:1fr;gap:20px;margin-bottom:56px}
-  .salon__pair{grid-template-columns:3fr 8px 2fr;gap:10px}
-  .salon__a .salon__in{aspect-ratio:4/5}
-  .salon__seam svg{left:-2px}
+  .salon__pair{grid-template-columns:1fr;gap:26px}
+  .salon__b{width:64%;margin:0 0 0 auto}
 
   .shop__win{grid-template-columns:1fr;gap:64px}
   .sh:nth-child(odd){width:86%}
@@ -379,8 +373,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .menu__card .cart__body{padding:84px 22px 44px}
   .menu__lead{margin-bottom:40px}
   .menu__cols{grid-template-columns:1fr;gap:44px}
-  .menu li{display:grid;grid-template-columns:1fr 54px;column-gap:16px;align-items:center}
-  .menu li .th{display:block;grid-column:2;grid-row:1/span 2;width:54px;height:68px;object-fit:cover;border-radius:27px 27px 0 0}
+  .menu li{display:grid;grid-template-columns:1fr 60px;column-gap:16px;align-items:center}
+  .menu li .th{display:block;grid-column:2;grid-row:1/span 2;width:60px;height:75px;object-fit:cover;border-radius:3px}
   .menu li b,.menu li span{grid-column:1}
 
   .visit__grid{grid-template-columns:1fr;gap:60px}
@@ -399,7 +393,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .rm .house__stage{position:relative}
 .rm .house__win{clip-path:none}
 .rm .house__lines{display:none}
-.rm .salon__in{clip-path:none}
+
 
 
 /* ---------- v3 ---------- */
